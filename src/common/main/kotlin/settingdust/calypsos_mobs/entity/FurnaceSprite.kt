@@ -10,6 +10,7 @@ import net.minecraft.world.SimpleContainer
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.PathfinderMob
+import net.minecraft.world.entity.ai.behavior.BehaviorUtils
 import net.minecraft.world.entity.ai.behavior.EntityTracker
 import net.minecraft.world.entity.ai.memory.MemoryModuleType
 import net.minecraft.world.entity.item.ItemEntity
@@ -218,6 +219,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 tickCount < 2 -> state.setAndContinue(Animations.WAKEUP)
                 !moving && (state.controller.hasAnimationFinished() || !idling) ->
                     state.setAndContinue(Animations.WEIGHTED_IDLE.randomByWeight())
+
                 moving -> state.setAndContinue(Animations.WALK)
                 else -> PlayState.CONTINUE
             }
@@ -235,13 +237,6 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     }
 
     private val recipeCheck = RecipeManager.createCheck(RecipeType.SMELTING)
-
-    override fun canHoldItem(stack: ItemStack): Boolean {
-        testInventory.setItem(0, stack)
-        val recipe = recipeCheck.getRecipeFor(testInventory, level())
-        testInventory.clearContent()
-        return recipe.isPresent
-    }
 
     override fun brainProvider() = SmartBrainProvider(this)
 
@@ -265,7 +260,9 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                     BrainUtils.setMemory(entity, MemoryModuleType.LOOK_TARGET, EntityTracker(player, false))
                 }
             },
-        NearestItemSensor<FurnaceSprite>().setRadius(10.0, 4.0),
+        NearestItemSensor<FurnaceSprite>().setRadius(10.0, 4.0).setPredicate { item, entity ->
+            item.owner != entity && entity.wantsToPickUp(item.item) && entity.hasLineOfSight(item)
+        },
         HurtBySensor<FurnaceSprite>().afterScanning { entity ->
             BrainUtils.getMemory(entity, MemoryModuleType.HURT_BY_ENTITY)?.let {
                 BrainUtils.setMemory(entity, MemoryModuleType.ATTACK_TARGET, it)
@@ -290,7 +287,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                         && (targetItemEntity == null
                         || entity.distanceToSqr(targetItemEntity) > entity.distanceTo(itemEntity))
             }.cooldownFor { 20 },
-            LookAtTarget<FurnaceSprite>().runFor { 20 }.whenStarting { entity->
+            LookAtTarget<FurnaceSprite>().runFor { 20 }.whenStarting { entity ->
                 val target = BrainUtils.getMemory(entity, MemoryModuleType.LOOK_TARGET)
                 if (target !is EntityTracker) return@whenStarting
                 entity.lookAt(target.entity, 90F, 90F)
@@ -317,6 +314,13 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 if (!entityData.get(Datas.SLEEP)) triggerAnim("Sleep", "WakeUp")
             }
         }
+    }
+
+    override fun canHoldItem(stack: ItemStack): Boolean {
+        testInventory.setItem(0, stack)
+        val recipe = recipeCheck.getRecipeFor(testInventory, level())
+        testInventory.clearContent()
+        return recipe.isPresent
     }
 
     override fun pickUpItem(itemEntity: ItemEntity) {
@@ -381,11 +385,12 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
         if (progress >= 1.0) {
             val recipe = recipeCheck.getRecipeFor(inventory, level()).orElseThrow()
-            val result = recipe.assemble(inventory, level().registryAccess()).apply {
-                count *= inventory.getItem(0).count
-            }
+            val result = recipe.assemble(inventory, level().registryAccess())
+            inventory.getItem(0).shrink(1)
             triggerAnim("ItemInteract", Animations.SPITS[random.nextInt(Animations.SPITS.size - 1)])
-            spawnAtLocation(result)
+            val forward = forward.scale(0.6)
+            val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.2).add(position())
+            BehaviorUtils.throwItem(this, result, horizontalForward)
             inventory.clearContent()
         }
     }
