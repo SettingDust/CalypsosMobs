@@ -1,6 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-import earth.terrarium.cloche.IncludeTransformationState
 import groovy.lang.Closure
 
 
@@ -51,6 +50,12 @@ repositories {
         }
     }
 
+    maven("https://dl.cloudsmith.io/public/tslat/sbl/maven/") {
+        content {
+            includeGroup("net.tslat.smartbrainlib")
+        }
+    }
+
     mavenCentral()
 
     cloche {
@@ -87,6 +92,10 @@ cloche {
         dependency {
             modId = "geckolib"
         }
+
+        dependency {
+            modId = "smartbrainlib"
+        }
     }
 
     mappings {
@@ -95,10 +104,6 @@ cloche {
 
     common {
         mixins.from(file("src/common/main/resources/$id.mixins.json"))
-
-        dependencies {
-            compileOnly("org.spongepowered:mixin:0.8.7")
-        }
     }
 
     forge {
@@ -122,19 +127,21 @@ cloche {
 
         dependencies {
             implementation("org.spongepowered:mixin:0.8.7")
-            implementation("io.github.llamalad7:mixinextras-forge:0.5.0-rc.4") {
-                attributes {
-                    attribute(IncludeTransformationState.ATTRIBUTE, IncludeTransformationState.Extracted)
-                }
+            "io.github.llamalad7:mixinextras-common:0.5.0-rc.4".let {
+                implementation(it)
+                annotationProcessor(it)
+            }
+            "io.github.llamalad7:mixinextras-forge:0.5.0-rc.4".let {
+                implementation(it)
+                include(it)
             }
 
             modImplementation("thedarkcolour:kotlinforforge:4.11.0")
 
-            modImplementation("software.bernie.geckolib:geckolib-forge-1.20.1:4.7.3") {
-                attributes {
-                    attribute(IncludeTransformationState.ATTRIBUTE, IncludeTransformationState.Extracted)
-                }
-            }
+            modImplementation("software.bernie.geckolib:geckolib-forge-1.20.1:4.7.3")
+            implementation("com.eliotlash.mclib:mclib:20")
+
+            modImplementation("net.tslat.smartbrainlib:SmartBrainLib-forge-1.20.1:1.15")
         }
     }
 
@@ -157,4 +164,10 @@ cloche {
 
 kotlin {
     jvmToolchain(17)
+}
+
+tasks {
+    withType<ProcessResources> {
+        duplicatesStrategy = DuplicatesStrategy.WARN
+    }
 }

@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "calypsos_mobs:item/furnace_sprite"
+  }
+}
