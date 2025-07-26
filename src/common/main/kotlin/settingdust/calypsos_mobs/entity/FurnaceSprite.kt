@@ -262,13 +262,12 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     )
 
     override fun getCoreTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.coreTasks(
-        MoveToWalkTarget<FurnaceSprite>(),
-        Panic<FurnaceSprite>().panicFor { _, _ -> 20 }
+        MoveToWalkTarget<FurnaceSprite>()
     )
 
     override fun getAdditionalTasks(): Map<Activity, BrainActivityGroup<out FurnaceSprite>> = mapOf(
         Activity.PANIC to BrainActivityGroup<FurnaceSprite>(Activity.PANIC)
-            .behaviours(Panic<FurnaceSprite>().panicFor { _, _ -> 200 })
+            .behaviours(Panic<FurnaceSprite>().panicFor { _, _ -> 20 })
             .requireAndWipeMemoriesOnUse(MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY)
     )
 
