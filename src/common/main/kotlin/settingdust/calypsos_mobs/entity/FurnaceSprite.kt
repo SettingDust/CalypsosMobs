@@ -250,22 +250,11 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         NearestItemSensor<FurnaceSprite>().setRadius(10.0, 4.0).setPredicate { item, entity ->
             item.owner != entity && entity.wantsToPickUp(item.item) && entity.hasLineOfSight(item)
         },
-        HurtBySensor<FurnaceSprite>().afterScanning { entity ->
-            BrainUtils.getMemory(entity, MemoryModuleType.HURT_BY_ENTITY)?.let {
-                BrainUtils.setMemory(entity, MemoryModuleType.ATTACK_TARGET, it)
-            }
-        }
+        HurtBySensor<FurnaceSprite>()
     )
 
     override fun getCoreTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.coreTasks(
-        MoveToWalkTarget<FurnaceSprite>().whenStopping {
-            if (BrainUtils.getMemory(it, MemoryModuleType.HURT_BY) != null &&
-                BrainUtils.getMemory(it, MemoryModuleType.WALK_TARGET)
-                    ?.target?.currentBlockPosition()?.distSqr(it.blockPosition())?.let { it <= 2 } ?: false
-            ) {
-                BrainUtils.clearMemory(it, MemoryModuleType.HURT_BY)
-            }
-        }
+        MoveToWalkTarget<FurnaceSprite>()
     )
 
     override fun getFightTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.fightTasks(
