@@ -212,7 +212,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
     override fun registerControllers(registrar: AnimatableManager.ControllerRegistrar): Unit = registrar.run {
         add(AnimationController(this@FurnaceSprite, 10) { state ->
-            val moving = deltaMovement != Vec3.ZERO
+            val moving = state.isMoving
             val idling by lazy { state.controller.currentRawAnimation in Animations.WEIGHTED_IDLE.original.keys }
             when {
                 entityData.get(Datas.SLEEP) -> state.setAndContinue(Animations.SLEEP)

@@ -8,5 +8,5 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer
 
 class FurnaceSpriteRenderer(context: EntityRendererProvider.Context) :
     GeoEntityRenderer<FurnaceSprite>(context, DefaultedEntityGeoModel(CalypsosMobs.id("furnace_sprite"))) {
-    override fun getMotionAnimThreshold(animatable: FurnaceSprite) = 0.0005f
+    override fun getMotionAnimThreshold(animatable: FurnaceSprite) = 0.005f
 }
