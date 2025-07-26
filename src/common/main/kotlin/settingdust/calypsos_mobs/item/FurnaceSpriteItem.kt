@@ -8,6 +8,7 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.gameevent.GameEvent
 import settingdust.calypsos_mobs.CalypsosMobsEntities
+import kotlin.math.atan2
 
 class FurnaceSpriteItem : Item(Properties().stacksTo(64)) {
 
@@ -22,16 +23,30 @@ class FurnaceSpriteItem : Item(Properties().stacksTo(64)) {
         } else {
             pos.relative(direction)
         }
-        if (CalypsosMobsEntities.FURNACE_SPRITE.spawn(
-                level,
-                itemstack,
-                context.player,
-                finalPos,
-                MobSpawnType.SPAWN_EGG,
-                true,
-                pos != finalPos && direction === Direction.UP
-            ) != null
-        ) {
+        val player = context.player
+        val entity = CalypsosMobsEntities.FURNACE_SPRITE.create(
+            level,
+            null,
+            { entity ->
+                if (player != null) {
+                    val dx = player.x - entity.x
+                    val dz = player.z - entity.z
+                    val angle = atan2(dz, dx)
+                    entity.yRot = (angle * (180f / Math.PI)).toFloat() - 90f
+                    entity.yRotO = entity.yRot
+                    entity.yBodyRotO = entity.yRot
+                    entity.yBodyRot = entity.yRot
+                    entity.yHeadRotO = entity.yRot
+                    entity.yHeadRot = entity.yRot
+                }
+            },
+            finalPos,
+            MobSpawnType.SPAWN_EGG,
+            true,
+            pos != finalPos && direction === Direction.UP
+        )
+        if (entity != null) {
+            level.addFreshEntityWithPassengers(entity)
             itemstack.shrink(1)
             level.gameEvent(context.player, GameEvent.ENTITY_PLACE, finalPos)
         }
