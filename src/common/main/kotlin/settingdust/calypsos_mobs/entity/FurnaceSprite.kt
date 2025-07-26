@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.RecipeManager
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.Level
+import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.tslat.smartbrainlib.api.SmartBrainOwner
 import net.tslat.smartbrainlib.api.core.BrainActivityGroup
@@ -214,6 +215,13 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         )
     }
 
+    private fun tryWakeUp() {
+        if (entityData.get(Datas.SLEEPY_DURATION) > SLEEP_THRESHOLD) {
+            triggerAnim("WakeUp", "WakeUp")
+        }
+        entityData.set(Datas.SLEEPY_DURATION, 0)
+    }
+
     private val recipeCheck = RecipeManager.createCheck(RecipeType.SMELTING)
 
     override fun brainProvider() = SmartBrainProvider(this)
@@ -269,7 +277,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 val itemEntity = BrainUtils.getMemory(entity, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM)
                     ?: return@startCondition false
                 val canMerge by lazy { ItemStack.isSameItemSameTags(entity.inventory.getItem(0), itemEntity.item) }
-                entity.entityData.set(Datas.SLEEPY_DURATION, 0)
+                entity.tryWakeUp()
                 (entity.inventory.isEmpty || canMerge)
                         && (targetItemEntity == null || targetItemEntity!!.isRemoved
                         || entity.distanceToSqr(targetItemEntity) > entity.distanceTo(itemEntity))
@@ -277,8 +285,8 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             LookAtTarget<FurnaceSprite>().runFor { 20 }.whenStarting { entity ->
                 val target = BrainUtils.getMemory(entity, MemoryModuleType.LOOK_TARGET)
                 if (target !is EntityTracker) return@whenStarting
+                entity.tryWakeUp()
                 entity.lookAt(target.entity, 90F, 90F)
-                entity.entityData.set(Datas.SLEEPY_DURATION, 0)
             },
             OneRandomBehaviour(
                 SetRandomLookTarget<FurnaceSprite>().startCondition { entity ->
@@ -309,7 +317,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     }
 
     override fun hurt(source: DamageSource, amount: Float): Boolean {
-        entityData.set(Datas.SLEEPY_DURATION, 0)
+        tryWakeUp()
         return super.hurt(source, amount)
     }
 
@@ -340,7 +348,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             return
         }
 
-        entityData.set(Datas.SLEEPY_DURATION, 0)
+        tryWakeUp()
 
         if (level().isClientSide && random.nextDouble() < 0.1) {
             level().playLocalSound(
@@ -385,5 +393,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         this.inventory.removeAllItems().forEach(::spawnAtLocation)
     }
 
-    override fun getPickRadius() = 0.6f
+    override fun getBoundingBoxForCulling(): AABB {
+        return super.getBoundingBoxForCulling().inflate(0.6)
+    }
 }
