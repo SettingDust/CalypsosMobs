@@ -281,10 +281,10 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     override fun getIdleTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.idleTasks(
         FirstApplicableBehaviour(
             MoveToNearestVisibleWantedItem<FurnaceSprite>().startCondition { entity ->
-                val itemEntity = BrainUtils.getMemory(entity, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM)!!
+                val itemEntity = BrainUtils.getMemory(entity, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM) ?: return@startCondition false
                 val canMerge by lazy { ItemStack.isSameItemSameTags(entity.inventory.getItem(0), itemEntity.item) }
                 (entity.inventory.isEmpty || canMerge)
-                        && (targetItemEntity == null
+                        && (targetItemEntity == null || targetItemEntity!!.isRemoved
                         || entity.distanceToSqr(targetItemEntity) > entity.distanceTo(itemEntity))
             }.cooldownFor { 20 },
             LookAtTarget<FurnaceSprite>().runFor { 20 }.whenStarting { entity ->
@@ -391,7 +391,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             val forward = forward.scale(0.6)
             val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.2).add(position())
             BehaviorUtils.throwItem(this, result, horizontalForward)
-            inventory.clearContent()
+            progress = 0.0
         }
     }
 
