@@ -317,6 +317,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     }
 
     override fun pickUpItem(itemEntity: ItemEntity) {
+        if (itemEntity.owner == this) return
         triggerAnim("ItemInteract", "Absorb")
         InventoryCarrier.pickUpItem(this, this, itemEntity)
         targetItemEntity = null
