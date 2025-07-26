@@ -1,6 +1,7 @@
 package settingdust.calypsos_mobs.entity
 
 import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
@@ -58,15 +59,20 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     GeoEntity,
     SmartBrainOwner<FurnaceSprite>,
     InventoryCarrier {
-        
+
     companion object {
+        @JvmStatic
+        val INITIALIZED: EntityDataAccessor<Boolean> =
+            SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.BOOLEAN)
+
         @JvmStatic
         val HEAT: EntityDataAccessor<Int> =
             SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.INT)
+
         @JvmStatic
         val SLEEPY_DURATION: EntityDataAccessor<Int> =
             SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.INT)
-        
+
         private object Animations {
             val IDLE = RawAnimation.begin().then("furnace_sprite.idle", Animation.LoopType.PLAY_ONCE)
             val IDLE2 = RawAnimation.begin().then("furnace_sprite.idle2", Animation.LoopType.PLAY_ONCE)
@@ -191,11 +197,10 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     override fun getAnimatableInstanceCache(): AnimatableInstanceCache = geoCache
 
     override fun registerControllers(registrar: AnimatableManager.ControllerRegistrar): Unit = registrar.run {
-        add(AnimationController(this@FurnaceSprite, 10) { state ->
+        add(AnimationController(this@FurnaceSprite, 0) { state ->
             val moving = state.isMoving
             val idling by lazy { state.controller.currentRawAnimation in Animations.WEIGHTED_IDLE.original.keys }
             when {
-                tickCount < 2 -> state.setAndContinue(Animations.WAKEUP)
                 entityData.get(SLEEPY_DURATION) > SLEEP_THRESHOLD -> state.setAndContinue(Animations.SLEEP)
                 !moving && (state.controller.hasAnimationFinished() || !idling) ->
                     state.setAndContinue(Animations.WEIGHTED_IDLE.randomByWeight())
@@ -291,6 +296,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         super.defineSynchedData()
         entityData.define(HEAT, 0)
         entityData.define(SLEEPY_DURATION, 0)
+        entityData.define(INITIALIZED, false)
     }
 
     override fun canHoldItem(stack: ItemStack): Boolean {
@@ -385,5 +391,30 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
     override fun getBoundingBoxForCulling(): AABB {
         return super.getBoundingBoxForCulling().inflate(0.6)
+    }
+
+    override fun addAdditionalSaveData(compound: CompoundTag) {
+        super.addAdditionalSaveData(compound)
+        compound.putBoolean("Initialized", entityData.get(INITIALIZED))
+        compound.putInt("Heat", entityData.get(HEAT))
+        compound.putInt("SleepyDuration", entityData.get(SLEEPY_DURATION))
+        readInventoryFromTag(compound)
+    }
+
+    override fun readAdditionalSaveData(compound: CompoundTag) {
+        super.readAdditionalSaveData(compound)
+        entityData.set(INITIALIZED, compound.getBoolean("Initialized"))
+        entityData.set(HEAT, compound.getInt("Heat"))
+        entityData.set(SLEEPY_DURATION, compound.getInt("SleepyDuration"))
+        writeInventoryToTag(compound)
+    }
+
+    override fun onAddedToWorld() {
+        super.onAddedToWorld()
+        if (level().isClientSide) return
+        if (!entityData.get(INITIALIZED)) {
+            entityData.set(INITIALIZED, true)
+            triggerAnim("WakeUp", "WakeUp")
+        }
     }
 }
