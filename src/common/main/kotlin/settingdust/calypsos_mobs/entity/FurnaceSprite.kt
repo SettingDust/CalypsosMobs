@@ -17,6 +17,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType
 import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.npc.InventoryCarrier
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.entity.schedule.Activity
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.RecipeManager
 import net.minecraft.world.item.crafting.RecipeType
@@ -259,11 +260,14 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     )
 
     override fun getCoreTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.coreTasks(
-        MoveToWalkTarget<FurnaceSprite>()
+        MoveToWalkTarget<FurnaceSprite>(),
+        Panic<FurnaceSprite>().panicFor { _, _ -> 200 }
     )
 
-    override fun getFightTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.fightTasks(
-        Panic<FurnaceSprite>().panicFor { _, _ -> 200 }
+    override fun getAdditionalTasks(): Map<Activity, BrainActivityGroup<out FurnaceSprite>> = mapOf(
+        Activity.PANIC to BrainActivityGroup<FurnaceSprite>(Activity.PANIC)
+            .behaviours(Panic<FurnaceSprite>().panicFor { _, _ -> 200 })
+            .requireAndWipeMemoriesOnUse(MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY)
     )
 
     override fun getIdleTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.idleTasks(
@@ -291,6 +295,8 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             )
         )
     )
+
+    override fun getActivityPriorities() = listOf(Activity.PANIC, Activity.IDLE)
 
     override fun defineSynchedData() {
         super.defineSynchedData()
