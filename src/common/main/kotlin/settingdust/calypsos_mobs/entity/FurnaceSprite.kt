@@ -6,7 +6,6 @@ import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.sounds.SoundEvents
-import net.minecraft.sounds.SoundSource
 import net.minecraft.world.SimpleContainer
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.EntityType
@@ -74,6 +73,10 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         val SLEEPY_DURATION: EntityDataAccessor<Int> =
             SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.INT)
 
+        @JvmStatic
+        val WORKING: EntityDataAccessor<Boolean> =
+            SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.BOOLEAN)
+
         private object Animations {
             val IDLE = RawAnimation.begin().then("furnace_sprite.idle", Animation.LoopType.PLAY_ONCE)
             val IDLE2 = RawAnimation.begin().then("furnace_sprite.idle2", Animation.LoopType.PLAY_ONCE)
@@ -117,9 +120,9 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
                 level.addParticle(
                     ParticleTypes.FLAME,
-                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.4 - 0.2),
-                    entity.y + entity.random.nextDouble() * 0.6,
-                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.4 - 0.2),
+                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.6 - 0.3),
+                    entity.y + entity.random.nextDouble() * 0.4,
+                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.6 - 0.3),
                     0.0, 0.0, 0.0
                 )
             },
@@ -131,9 +134,9 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 repeat(2) {
                     level.addParticle(
                         ParticleTypes.FLAME,
-                        entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.4 - 0.2),
-                        entity.y + entity.random.nextDouble() * 0.6,
-                        entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.4 - 0.2),
+                        entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.6 - 0.3),
+                        entity.y + entity.random.nextDouble() * 0.4,
+                        entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.6 - 0.3),
                         0.0, 0.0, 0.0
                     )
                 }
@@ -146,16 +149,16 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
                 level.addParticle(
                     ParticleTypes.FLAME,
-                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.4 - 0.2),
-                    entity.y + entity.random.nextDouble() * 0.6,
-                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.4 - 0.2),
+                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.6 - 0.3),
+                    entity.y + entity.random.nextDouble() * 0.4,
+                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.6 - 0.3),
                     0.0, 0.0, 0.0
                 )
                 level.addParticle(
                     ParticleTypes.SOUL_FIRE_FLAME,
-                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.4 - 0.2),
-                    entity.y + entity.random.nextDouble() * 0.6,
-                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.4 - 0.2),
+                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.6 - 0.3),
+                    entity.y + entity.random.nextDouble() * 0.4,
+                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.6 - 0.3),
                     0.0, 0.0, 0.0
                 )
             },
@@ -168,9 +171,9 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 repeat(2) {
                     level.addParticle(
                         ParticleTypes.SOUL_FIRE_FLAME,
-                        entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.4 - 0.2),
-                        entity.y + entity.random.nextDouble() * 0.6,
-                        entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.4 - 0.2),
+                        entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.6 - 0.3),
+                        entity.y + entity.random.nextDouble() * 0.4,
+                        entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.6 - 0.3),
                         0.0, 0.0, 0.0
                     )
                 }
@@ -303,6 +306,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         entityData.define(HEAT, 0)
         entityData.define(SLEEPY_DURATION, 0)
         entityData.define(INITIALIZED, false)
+        entityData.define(WORKING, false)
     }
 
     override fun canHoldItem(stack: ItemStack): Boolean {
@@ -325,66 +329,73 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
     override fun tick() {
         super.tick()
-        val prevHeat = entityData.get(HEAT)
-        val heat = if (inventory.isEmpty) {
-            max(0, prevHeat - 1)
-        } else {
-            min(HEAT_TO_TIME.last().first, prevHeat + 1)
-        }
-        entityData.set(HEAT, heat)
-
-        val tierIndex = HEAT_TO_TIME.indexOfLast { (key) -> heat >= key }
-        val neededTicks = HEAT_TO_TIME[tierIndex].second
-
-        if (heat > 0 && level().isClientSide)
-            HEAT_TO_PARTICLE[tierIndex](level(), this)
-
-        if (inventory.isEmpty) {
-            progress = 0.0
-            val dataItem = entityData.getItem(SLEEPY_DURATION)
-            if (entityData.get(SLEEPY_DURATION) > SLEEP_THRESHOLD) {
-                entityData.set(SLEEPY_DURATION, dataItem.value, true)
-            } else if (level().isNight || level().getRawBrightness(blockPosition(), 0) < 8) {
-                dataItem.value += 1
+        if (!level().isClientSide) {
+            val prevHeat = entityData.get(HEAT)
+            val heat = if (inventory.isEmpty) {
+                max(0, prevHeat - 1)
+            } else {
+                min(HEAT_TO_TIME.last().first, prevHeat + 1)
             }
-            return
-        }
+            entityData.set(HEAT, heat)
 
-        tryWakeUp()
+            val neededTicks = HEAT_TO_TIME.last { (key) -> heat >= key }.second
 
-        if (level().isClientSide && random.nextDouble() < 0.1) {
-            level().playLocalSound(
-                blockPosition(),
-                SoundEvents.FURNACE_FIRE_CRACKLE,
-                SoundSource.AMBIENT,
-                1.0f,
-                1.0f,
-                false
-            )
-        }
+            if (inventory.isEmpty) {
+                entityData.set(WORKING, false)
+                progress = 0.0
+                val dataItem = entityData.getItem(SLEEPY_DURATION)
+                if (entityData.get(SLEEPY_DURATION) > SLEEP_THRESHOLD) {
+                    entityData.set(SLEEPY_DURATION, dataItem.value, true)
+                } else if (level().isNight || level().getRawBrightness(blockPosition(), 0) < 8) {
+                    dataItem.value += 1
+                }
+                return
+            }
 
-        val forward = forward
-        val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
-        val side = Vec3(-forward.z, 0.0, forward.x).normalize()
-        level().addParticle(
-            ParticleTypes.SMOKE,
-            x + horizontalForward.x + side.x * (random.nextDouble() * 0.4 - 0.2),
-            y + random.nextDouble() * 0.6,
-            z + horizontalForward.z + side.z * (random.nextDouble() * 0.4 - 0.2),
-            0.0, 0.3, 0.0
-        )
+            entityData.set(WORKING, true)
 
-        progress += 1.0 / neededTicks
+            tryWakeUp()
 
-        if (progress >= 1.0) {
-            val recipe = recipeCheck.getRecipeFor(inventory, level()).orElseThrow()
-            val result = recipe.assemble(inventory, level().registryAccess())
-            inventory.getItem(0).shrink(1)
-            triggerAnim("ItemInteract", Animations.SPITS[random.nextInt(Animations.SPITS.size - 1)])
-            val forward = forward.scale(0.6)
-            val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.2).add(position())
-            BehaviorUtils.throwItem(this, result, horizontalForward)
-            progress = 0.0
+            progress += 1.0 / neededTicks
+
+            if (progress >= 1.0) {
+                val recipe = recipeCheck.getRecipeFor(inventory, level()).orElseThrow()
+                val result = recipe.assemble(inventory, level().registryAccess())
+                inventory.getItem(0).shrink(1)
+                triggerAnim("ItemInteract", Animations.SPITS[random.nextInt(Animations.SPITS.size - 1)])
+                val forward = forward.scale(0.6)
+                val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.2).add(position())
+                BehaviorUtils.throwItem(this, result, horizontalForward)
+                progress = 0.0
+            }
+        } else {
+            if (entityData.get(WORKING)) {
+                if (random.nextDouble() < 0.1) {
+                    playSound(
+                        SoundEvents.FURNACE_FIRE_CRACKLE,
+                        1.0f,
+                        1.0f
+                    )
+                }
+
+                val forward = forward
+                val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
+                val side = Vec3(-forward.z, 0.0, forward.x).normalize()
+
+                level().addParticle(
+                    ParticleTypes.SMOKE,
+                    x + horizontalForward.x + side.x * (random.nextDouble() * 0.6 - 0.3),
+                    y + random.nextDouble() * 0.4,
+                    z + horizontalForward.z + side.z * (random.nextDouble() * 0.6 - 0.3),
+                    0.0, 0.0, 0.0
+                )
+            }
+
+            val heat = entityData.get(HEAT)
+            if (heat > 0) {
+                val tierIndex = HEAT_TO_TIME.indexOfLast { (key) -> heat >= key }
+                HEAT_TO_PARTICLE[tierIndex](level(), this)
+            }
         }
     }
 
@@ -404,7 +415,8 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         compound.putBoolean("Initialized", entityData.get(INITIALIZED))
         compound.putInt("Heat", entityData.get(HEAT))
         compound.putInt("SleepyDuration", entityData.get(SLEEPY_DURATION))
-        readInventoryFromTag(compound)
+        compound.putBoolean("Working", entityData.get(WORKING))
+        writeInventoryToTag(compound)
     }
 
     override fun readAdditionalSaveData(compound: CompoundTag) {
@@ -412,7 +424,8 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         entityData.set(INITIALIZED, compound.getBoolean("Initialized"))
         entityData.set(HEAT, compound.getInt("Heat"))
         entityData.set(SLEEPY_DURATION, compound.getInt("SleepyDuration"))
-        writeInventoryToTag(compound)
+        entityData.set(WORKING, compound.getBoolean("Working"))
+        readInventoryFromTag(compound)
     }
 
     override fun onAddedToWorld() {
