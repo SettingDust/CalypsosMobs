@@ -30,7 +30,6 @@ import net.tslat.smartbrainlib.api.core.behaviour.custom.look.LookAtTarget
 import net.tslat.smartbrainlib.api.core.behaviour.custom.misc.Idle
 import net.tslat.smartbrainlib.api.core.behaviour.custom.move.FleeTarget
 import net.tslat.smartbrainlib.api.core.behaviour.custom.move.MoveToWalkTarget
-import net.tslat.smartbrainlib.api.core.behaviour.custom.path.SetRandomWalkTarget
 import net.tslat.smartbrainlib.api.core.behaviour.custom.target.SetRandomLookTarget
 import net.tslat.smartbrainlib.api.core.sensor.ExtendedSensor
 import net.tslat.smartbrainlib.api.core.sensor.vanilla.HurtBySensor
@@ -40,6 +39,7 @@ import net.tslat.smartbrainlib.util.BrainUtils
 import settingdust.calypsos_mobs.CalypsosMobsItems
 import settingdust.calypsos_mobs.WeightedMap
 import settingdust.calypsos_mobs.brain.behaviour.MoveToNearestVisibleWantedItem
+import settingdust.calypsos_mobs.getItem
 import software.bernie.geckolib.animatable.GeoEntity
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.core.animation.AnimatableManager
@@ -77,7 +77,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
             val WALK = RawAnimation.begin().thenPlay("furnace_sprite.walk")
             val WAKEUP = RawAnimation.begin().thenPlay("furnace_sprite.wake_up")
-            val SLEEP = RawAnimation.begin().thenPlayAndHold("furnace_sprite.sleep")
+            val SLEEP = RawAnimation.begin().thenPlay("furnace_sprite.sleep").thenLoop("furnace_sprite.sleep_idle")
             val ABSORB = RawAnimation.begin().thenPlay("furnace_sprite.absorb")
             val SPIT = RawAnimation.begin().thenPlay("furnace_sprite.spit")
             val SPIT2 = RawAnimation.begin().thenPlay("furnace_sprite.spit2")
@@ -88,8 +88,8 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         private object Datas {
             val HEAT: EntityDataAccessor<Int> =
                 SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.INT)
-            val SLEEP: EntityDataAccessor<Boolean> =
-                SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.BOOLEAN)
+            val SLEEPY_DURATION: EntityDataAccessor<Int> =
+                SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.INT)
         }
 
         val HEAT_TO_TIME = listOf(
@@ -186,8 +186,6 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     private val geoCache = GeckoLibUtil.createInstanceCache(this)
     private var progress = 0.0
 
-    private var lowLightTicks = 0
-
     override fun getAnimatableInstanceCache(): AnimatableInstanceCache = geoCache
 
     override fun registerControllers(registrar: AnimatableManager.ControllerRegistrar): Unit = registrar.run {
@@ -195,8 +193,8 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             val moving = state.isMoving
             val idling by lazy { state.controller.currentRawAnimation in Animations.WEIGHTED_IDLE.original.keys }
             when {
-                entityData.get(Datas.SLEEP) -> state.setAndContinue(Animations.SLEEP)
                 tickCount < 2 -> state.setAndContinue(Animations.WAKEUP)
+                entityData.get(Datas.SLEEPY_DURATION) > SLEEP_THRESHOLD -> state.setAndContinue(Animations.SLEEP)
                 !moving && (state.controller.hasAnimationFinished() || !idling) ->
                     state.setAndContinue(Animations.WEIGHTED_IDLE.randomByWeight())
 
@@ -260,9 +258,11 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
     override fun getIdleTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.idleTasks(
         FirstApplicableBehaviour(
-            MoveToNearestVisibleWantedItem<FurnaceSprite>().startCondition { entity ->
-                val itemEntity = BrainUtils.getMemory(entity, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM) ?: return@startCondition false
+            MoveToNearestVisibleWantedItem<FurnaceSprite> { _, _ -> 1.25f }.startCondition { entity ->
+                val itemEntity = BrainUtils.getMemory(entity, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM)
+                    ?: return@startCondition false
                 val canMerge by lazy { ItemStack.isSameItemSameTags(entity.inventory.getItem(0), itemEntity.item) }
+                entity.entityData.set(Datas.SLEEPY_DURATION, 0)
                 (entity.inventory.isEmpty || canMerge)
                         && (targetItemEntity == null || targetItemEntity!!.isRemoved
                         || entity.distanceToSqr(targetItemEntity) > entity.distanceTo(itemEntity))
@@ -271,10 +271,12 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 val target = BrainUtils.getMemory(entity, MemoryModuleType.LOOK_TARGET)
                 if (target !is EntityTracker) return@whenStarting
                 entity.lookAt(target.entity, 90F, 90F)
+                entity.entityData.set(Datas.SLEEPY_DURATION, 0)
             },
             OneRandomBehaviour(
-                SetRandomLookTarget<FurnaceSprite>(),
-                SetRandomWalkTarget<FurnaceSprite>().setRadius(5.0).speedModifier(0.75F).cooldownFor { 150 },
+                SetRandomLookTarget<FurnaceSprite>().startCondition { entity ->
+                    entity.entityData.get(Datas.SLEEPY_DURATION) < SLEEP_THRESHOLD
+                },
                 Idle<FurnaceSprite>().runFor { it.getRandom().nextIntBetweenInclusive(30, 60) }
             )
         )
@@ -283,17 +285,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     override fun defineSynchedData() {
         super.defineSynchedData()
         entityData.define(Datas.HEAT, 0)
-        entityData.define(Datas.SLEEP, false)
-    }
-
-    override fun onSyncedDataUpdated(key: EntityDataAccessor<*>) {
-        super.onSyncedDataUpdated(key)
-        when (key) {
-            Datas.SLEEP -> {
-                if (!level().isClientSide) return
-                if (!entityData.get(Datas.SLEEP)) triggerAnim("Sleep", "WakeUp")
-            }
-        }
+        entityData.define(Datas.SLEEPY_DURATION, 0)
     }
 
     override fun canHoldItem(stack: ItemStack): Boolean {
@@ -310,8 +302,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     }
 
     override fun hurt(source: DamageSource, amount: Float): Boolean {
-        entityData.set(Datas.SLEEP, false, true)
-        lowLightTicks = 0
+        entityData.set(Datas.SLEEPY_DURATION, 0)
         return super.hurt(source, amount)
     }
 
@@ -333,21 +324,16 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
         if (inventory.isEmpty) {
             progress = 0.0
-            val lowLight = level().isNight || level().getRawBrightness(blockPosition(), 0) < 8
-            if (lowLight && lowLightTicks >= SLEEP_THRESHOLD) {
-                entityData.set(Datas.SLEEP, true, true)
-            } else if (lowLight) {
-                entityData.set(Datas.SLEEP, false)
-                lowLightTicks++
-            } else {
-                entityData.set(Datas.SLEEP, false)
-                lowLightTicks = 0
+            val dataItem = entityData.getItem(Datas.SLEEPY_DURATION)
+            if (entityData.get(Datas.SLEEPY_DURATION) > SLEEP_THRESHOLD) {
+                entityData.set(Datas.SLEEPY_DURATION, dataItem.value, true)
+            } else if (level().isNight || level().getRawBrightness(blockPosition(), 0) < 8) {
+                dataItem.value += 1
             }
             return
         }
 
-        entityData.set(Datas.SLEEP, false, true)
-        lowLightTicks = 0
+        entityData.set(Datas.SLEEPY_DURATION, 0)
 
         if (level().isClientSide && random.nextDouble() < 0.1) {
             level().playLocalSound(
@@ -368,7 +354,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             x + horizontalForward.x + side.x * (random.nextDouble() * 0.4 - 0.2),
             y + random.nextDouble() * 0.6,
             z + horizontalForward.z + side.z * (random.nextDouble() * 0.4 - 0.2),
-            0.0, 0.0, 0.0
+            0.0, 0.3, 0.0
         )
 
         progress += 1.0 / neededTicks
