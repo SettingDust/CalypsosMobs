@@ -13,7 +13,7 @@ plugins {
 
     id("com.gradleup.shadow") version "8.3.6"
 
-    id("earth.terrarium.cloche") version "0.11.7"
+    id("earth.terrarium.cloche") version "0.11.11"
 }
 
 val archive_name: String by rootProject.properties
@@ -112,6 +112,8 @@ cloche {
     forge {
         minecraftVersion = "1.20.1"
         loaderVersion = "47.4.4"
+
+        mixins.from(file("src/common/main/resources/$id.mixins.json"))
 
         metadata {
             modLoader = "kotlinforforge"
