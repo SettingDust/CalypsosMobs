@@ -27,8 +27,8 @@ object CalypsosMobsEntities {
                         FURNACE_SPRITE,
                         PathfinderMob.createMobAttributes()
                             .add(Attributes.MAX_HEALTH, 10.0)
-                            .add(Attributes.KNOCKBACK_RESISTANCE, 2.0)
-                            .add(Attributes.MOVEMENT_SPEED, 0.2)
+                            .add(Attributes.KNOCKBACK_RESISTANCE, 0.8)
+                            .add(Attributes.MOVEMENT_SPEED, 0.3)
                             .build()
                     )
                 }

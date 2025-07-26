@@ -41,7 +41,6 @@ import net.tslat.smartbrainlib.util.BrainUtils
 import settingdust.calypsos_mobs.CalypsosMobsItems
 import settingdust.calypsos_mobs.WeightedMap
 import settingdust.calypsos_mobs.brain.behaviour.MoveToNearestVisibleWantedItem
-import settingdust.calypsos_mobs.getItem
 import software.bernie.geckolib.animatable.GeoEntity
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.core.animation.AnimatableManager
@@ -264,7 +263,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
     override fun getCoreTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.coreTasks(
         MoveToWalkTarget<FurnaceSprite>(),
-        Panic<FurnaceSprite>().panicFor { _, _ -> 200 }
+        Panic<FurnaceSprite>().panicFor { _, _ -> 20 }
     )
 
     override fun getAdditionalTasks(): Map<Activity, BrainActivityGroup<out FurnaceSprite>> = mapOf(
@@ -344,11 +343,8 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             if (inventory.isEmpty) {
                 entityData.set(WORKING, false)
                 progress = 0.0
-                val dataItem = entityData.getItem(SLEEPY_DURATION)
-                if (entityData.get(SLEEPY_DURATION) > SLEEP_THRESHOLD) {
-                    entityData.set(SLEEPY_DURATION, dataItem.value, true)
-                } else if (level().isNight || level().getRawBrightness(blockPosition(), 0) < 8) {
-                    dataItem.value += 1
+                if (level().isNight || level().getRawBrightness(blockPosition(), 0) < 8) {
+                    entityData.set(SLEEPY_DURATION, entityData.get(SLEEPY_DURATION) + 1)
                 }
                 return
             }
