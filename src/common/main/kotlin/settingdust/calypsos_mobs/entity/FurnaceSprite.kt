@@ -28,7 +28,7 @@ import net.tslat.smartbrainlib.api.core.behaviour.FirstApplicableBehaviour
 import net.tslat.smartbrainlib.api.core.behaviour.OneRandomBehaviour
 import net.tslat.smartbrainlib.api.core.behaviour.custom.look.LookAtTarget
 import net.tslat.smartbrainlib.api.core.behaviour.custom.misc.Idle
-import net.tslat.smartbrainlib.api.core.behaviour.custom.move.FleeTarget
+import net.tslat.smartbrainlib.api.core.behaviour.custom.misc.Panic
 import net.tslat.smartbrainlib.api.core.behaviour.custom.move.MoveToWalkTarget
 import net.tslat.smartbrainlib.api.core.behaviour.custom.target.SetRandomLookTarget
 import net.tslat.smartbrainlib.api.core.sensor.ExtendedSensor
@@ -249,11 +249,18 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     )
 
     override fun getCoreTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.coreTasks(
-        MoveToWalkTarget<FurnaceSprite>()
+        MoveToWalkTarget<FurnaceSprite>().whenStopping {
+            if (BrainUtils.getMemory(it, MemoryModuleType.HURT_BY) != null &&
+                BrainUtils.getMemory(it, MemoryModuleType.WALK_TARGET)
+                    ?.target?.currentBlockPosition()?.distSqr(it.blockPosition())?.let { it <= 2 } ?: false
+            ) {
+                BrainUtils.clearMemory(it, MemoryModuleType.HURT_BY)
+            }
+        }
     )
 
     override fun getFightTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.fightTasks(
-        FleeTarget<FurnaceSprite>().speedModifier(1.25f)
+        Panic<FurnaceSprite>().panicFor { _, _ -> 200 }
     )
 
     override fun getIdleTasks(): BrainActivityGroup<out FurnaceSprite> = BrainActivityGroup.idleTasks(
