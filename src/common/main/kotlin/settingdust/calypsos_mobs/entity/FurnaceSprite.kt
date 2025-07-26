@@ -58,7 +58,15 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     GeoEntity,
     SmartBrainOwner<FurnaceSprite>,
     InventoryCarrier {
+        
     companion object {
+        @JvmStatic
+        val HEAT: EntityDataAccessor<Int> =
+            SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.INT)
+        @JvmStatic
+        val SLEEPY_DURATION: EntityDataAccessor<Int> =
+            SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.INT)
+        
         private object Animations {
             val IDLE = RawAnimation.begin().then("furnace_sprite.idle", Animation.LoopType.PLAY_ONCE)
             val IDLE2 = RawAnimation.begin().then("furnace_sprite.idle2", Animation.LoopType.PLAY_ONCE)
@@ -84,13 +92,6 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             val SPIT2 = RawAnimation.begin().thenPlay("furnace_sprite.spit2")
 
             val SPITS = arrayOf("Spit", "Spit2")
-        }
-
-        private object Datas {
-            val HEAT: EntityDataAccessor<Int> =
-                SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.INT)
-            val SLEEPY_DURATION: EntityDataAccessor<Int> =
-                SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.INT)
         }
 
         val HEAT_TO_TIME = listOf(
@@ -195,7 +196,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             val idling by lazy { state.controller.currentRawAnimation in Animations.WEIGHTED_IDLE.original.keys }
             when {
                 tickCount < 2 -> state.setAndContinue(Animations.WAKEUP)
-                entityData.get(Datas.SLEEPY_DURATION) > SLEEP_THRESHOLD -> state.setAndContinue(Animations.SLEEP)
+                entityData.get(SLEEPY_DURATION) > SLEEP_THRESHOLD -> state.setAndContinue(Animations.SLEEP)
                 !moving && (state.controller.hasAnimationFinished() || !idling) ->
                     state.setAndContinue(Animations.WEIGHTED_IDLE.randomByWeight())
 
@@ -216,10 +217,10 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     }
 
     private fun tryWakeUp() {
-        if (entityData.get(Datas.SLEEPY_DURATION) > SLEEP_THRESHOLD) {
+        if (entityData.get(SLEEPY_DURATION) > SLEEP_THRESHOLD) {
             triggerAnim("WakeUp", "WakeUp")
         }
-        entityData.set(Datas.SLEEPY_DURATION, 0)
+        entityData.set(SLEEPY_DURATION, 0)
     }
 
     private val recipeCheck = RecipeManager.createCheck(RecipeType.SMELTING)
@@ -290,7 +291,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             },
             OneRandomBehaviour(
                 SetRandomLookTarget<FurnaceSprite>().startCondition { entity ->
-                    entity.entityData.get(Datas.SLEEPY_DURATION) < SLEEP_THRESHOLD
+                    entity.entityData.get(SLEEPY_DURATION) < SLEEP_THRESHOLD
                 },
                 Idle<FurnaceSprite>().runFor { it.getRandom().nextIntBetweenInclusive(30, 60) }
             )
@@ -299,8 +300,8 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
     override fun defineSynchedData() {
         super.defineSynchedData()
-        entityData.define(Datas.HEAT, 0)
-        entityData.define(Datas.SLEEPY_DURATION, 0)
+        entityData.define(HEAT, 0)
+        entityData.define(SLEEPY_DURATION, 0)
     }
 
     override fun canHoldItem(stack: ItemStack): Boolean {
@@ -323,13 +324,13 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
     override fun tick() {
         super.tick()
-        val prevHeat = entityData.get(Datas.HEAT)
+        val prevHeat = entityData.get(HEAT)
         val heat = if (inventory.isEmpty) {
             max(0, prevHeat - 1)
         } else {
             min(HEAT_TO_TIME.last().first, prevHeat + 1)
         }
-        entityData.set(Datas.HEAT, heat)
+        entityData.set(HEAT, heat)
 
         val tierIndex = HEAT_TO_TIME.indexOfLast { (key) -> heat >= key }
         val neededTicks = HEAT_TO_TIME[tierIndex].second
@@ -339,9 +340,9 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
         if (inventory.isEmpty) {
             progress = 0.0
-            val dataItem = entityData.getItem(Datas.SLEEPY_DURATION)
-            if (entityData.get(Datas.SLEEPY_DURATION) > SLEEP_THRESHOLD) {
-                entityData.set(Datas.SLEEPY_DURATION, dataItem.value, true)
+            val dataItem = entityData.getItem(SLEEPY_DURATION)
+            if (entityData.get(SLEEPY_DURATION) > SLEEP_THRESHOLD) {
+                entityData.set(SLEEPY_DURATION, dataItem.value, true)
             } else if (level().isNight || level().getRawBrightness(blockPosition(), 0) < 8) {
                 dataItem.value += 1
             }
