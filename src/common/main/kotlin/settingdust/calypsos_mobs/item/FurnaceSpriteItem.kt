@@ -1,32 +1,41 @@
 package settingdust.calypsos_mobs.item
 
+import net.minecraft.core.Direction
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.MobSpawnType
 import net.minecraft.world.item.Item
-import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.UseAnim
 import net.minecraft.world.item.context.UseOnContext
+import net.minecraft.world.level.gameevent.GameEvent
 import settingdust.calypsos_mobs.CalypsosMobsEntities
-import kotlin.math.atan2
 
 class FurnaceSpriteItem : Item(Properties().stacksTo(64)) {
 
     override fun useOn(context: UseOnContext): InteractionResult {
-        val entity = CalypsosMobsEntities.FURNACE_SPRITE.create(context.level)!!
-        entity.setPos(context.clickLocation)
-        val player = context.player
-        if (player != null) {
-            val dx = player.x - entity.x
-            val dz = player.z - entity.z
-            val yRot = (atan2(dz, dx) * (180f / Math.PI)).toFloat() - 90f
-
-            entity.yRot = yRot
-            entity.yHeadRot = yRot
-            entity.yBodyRot = yRot
+        val level = context.level as? ServerLevel ?: return InteractionResult.SUCCESS
+        val itemstack = context.itemInHand
+        val pos = context.clickedPos
+        val direction = context.clickedFace
+        val blockstate = level.getBlockState(pos)
+        val finalPos = if (blockstate.getCollisionShape(level, pos).isEmpty) {
+            pos
+        } else {
+            pos.relative(direction)
         }
-        context.level.addFreshEntity(entity)
-        context.itemInHand.shrink(1)
-        return InteractionResult.sidedSuccess(context.level.isClientSide);
-    }
+        if (CalypsosMobsEntities.FURNACE_SPRITE.spawn(
+                level,
+                itemstack,
+                context.player,
+                finalPos,
+                MobSpawnType.SPAWN_EGG,
+                true,
+                pos != finalPos && direction === Direction.UP
+            ) != null
+        ) {
+            itemstack.shrink(1)
+            level.gameEvent(context.player, GameEvent.ENTITY_PLACE, finalPos)
+        }
 
-    override fun getUseAnimation(stack: ItemStack) = UseAnim.BLOCK
+        return InteractionResult.CONSUME
+    }
 }
