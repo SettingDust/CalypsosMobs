@@ -84,6 +84,7 @@ cloche {
 
         dependency {
             modId = "minecraft"
+            required = true
             version {
                 start = "1.20.1"
             }
@@ -91,10 +92,12 @@ cloche {
 
         dependency {
             modId = "geckolib"
+            required = true
         }
 
         dependency {
             modId = "smartbrainlib"
+            required = true
         }
     }
 
