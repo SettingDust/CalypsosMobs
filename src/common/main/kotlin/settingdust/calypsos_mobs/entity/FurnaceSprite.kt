@@ -107,13 +107,6 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 val side = Vec3(-forward.z, 0.0, forward.x).normalize()
 
                 level.addParticle(
-                    ParticleTypes.SMOKE,
-                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.4 - 0.2),
-                    entity.y + entity.random.nextDouble() * 0.6,
-                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.4 - 0.2),
-                    0.0, 0.0, 0.0
-                )
-                level.addParticle(
                     ParticleTypes.FLAME,
                     entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.4 - 0.2),
                     entity.y + entity.random.nextDouble() * 0.6,
@@ -124,19 +117,14 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             { level, entity ->
                 val forward = entity.forward
                 val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
-                level.addParticle(
-                    ParticleTypes.SMOKE,
-                    entity.x + horizontalForward.x + entity.random.nextDouble() * 0.4 - 0.2,
-                    entity.y + entity.random.nextDouble() * 0.6,
-                    entity.z + horizontalForward.z + entity.random.nextDouble() * 0.4 - 0.2,
-                    0.0, 0.0, 0.0
-                )
+
+                val side = Vec3(-forward.z, 0.0, forward.x).normalize()
                 repeat(2) {
                     level.addParticle(
                         ParticleTypes.FLAME,
-                        entity.x + horizontalForward.x + entity.random.nextDouble() * 0.4 - 0.2,
+                        entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.4 - 0.2),
                         entity.y + entity.random.nextDouble() * 0.6,
-                        entity.z + horizontalForward.z + entity.random.nextDouble() * 0.4 - 0.2,
+                        entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.4 - 0.2),
                         0.0, 0.0, 0.0
                     )
                 }
@@ -144,44 +132,36 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             { level, entity ->
                 val forward = entity.forward
                 val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
-                level.addParticle(
-                    ParticleTypes.SMOKE,
-                    entity.x + horizontalForward.x + entity.random.nextDouble() * 0.4 - 0.2,
-                    entity.y + entity.random.nextDouble() * 0.6,
-                    entity.z + horizontalForward.z + entity.random.nextDouble() * 0.4 - 0.2,
-                    0.0, 0.0, 0.0
-                )
+
+                val side = Vec3(-forward.z, 0.0, forward.x).normalize()
+
                 level.addParticle(
                     ParticleTypes.FLAME,
-                    entity.x + horizontalForward.x + entity.random.nextDouble() * 0.4 - 0.2,
+                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.4 - 0.2),
                     entity.y + entity.random.nextDouble() * 0.6,
-                    entity.z + horizontalForward.z + entity.random.nextDouble() * 0.4 - 0.2,
+                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.4 - 0.2),
                     0.0, 0.0, 0.0
                 )
                 level.addParticle(
                     ParticleTypes.SOUL_FIRE_FLAME,
-                    entity.x + horizontalForward.x + entity.random.nextDouble() * 0.4 - 0.2,
+                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.4 - 0.2),
                     entity.y + entity.random.nextDouble() * 0.6,
-                    entity.z + horizontalForward.z + entity.random.nextDouble() * 0.4 - 0.2,
+                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.4 - 0.2),
                     0.0, 0.0, 0.0
                 )
             },
             { level, entity ->
                 val forward = entity.forward
                 val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
-                level.addParticle(
-                    ParticleTypes.SMOKE,
-                    entity.x + horizontalForward.x + entity.random.nextDouble() * 0.4 - 0.2,
-                    entity.y + entity.random.nextDouble() * 0.6,
-                    entity.z + horizontalForward.z + entity.random.nextDouble() * 0.4 - 0.2,
-                    0.0, 0.0, 0.0
-                )
+
+                val side = Vec3(-forward.z, 0.0, forward.x).normalize()
+
                 repeat(2) {
                     level.addParticle(
                         ParticleTypes.SOUL_FIRE_FLAME,
-                        entity.x + horizontalForward.x + entity.random.nextDouble() * 0.4 - 0.2,
+                        entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.4 - 0.2),
                         entity.y + entity.random.nextDouble() * 0.6,
-                        entity.z + horizontalForward.z + entity.random.nextDouble() * 0.4 - 0.2,
+                        entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.4 - 0.2),
                         0.0, 0.0, 0.0
                     )
                 }
@@ -327,7 +307,6 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         triggerAnim("ItemInteract", "Absorb")
         InventoryCarrier.pickUpItem(this, this, itemEntity)
         targetItemEntity = null
-        progress = 0.0
     }
 
     override fun hurt(source: DamageSource, amount: Float): Boolean {
@@ -380,6 +359,17 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 false
             )
         }
+
+        val forward = forward
+        val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
+        val side = Vec3(-forward.z, 0.0, forward.x).normalize()
+        level().addParticle(
+            ParticleTypes.SMOKE,
+            x + horizontalForward.x + side.x * (random.nextDouble() * 0.4 - 0.2),
+            y + random.nextDouble() * 0.6,
+            z + horizontalForward.z + side.z * (random.nextDouble() * 0.4 - 0.2),
+            0.0, 0.0, 0.0
+        )
 
         progress += 1.0 / neededTicks
 
