@@ -372,4 +372,11 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     }
 
     override fun getPickResult() = ItemStack(CalypsosMobsItems.FURNACE_SPRITE)
+
+    override fun dropEquipment() {
+        super.dropEquipment()
+        this.inventory.removeAllItems().forEach(::spawnAtLocation)
+    }
+
+    override fun getPickRadius() = 0.6f
 }
