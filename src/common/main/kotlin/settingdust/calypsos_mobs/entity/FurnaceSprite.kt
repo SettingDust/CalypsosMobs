@@ -130,6 +130,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
 
                 val side = Vec3(-forward.z, 0.0, forward.x).normalize()
+
                 repeat(2) {
                     level.addParticle(
                         ParticleTypes.FLAME,
@@ -378,17 +379,19 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
                 val side = Vec3(-forward.z, 0.0, forward.x).normalize()
 
-                level().addParticle(
-                    ParticleTypes.SMOKE,
-                    x + horizontalForward.x + side.x * (random.nextDouble() * 0.6 - 0.3),
-                    y + random.nextDouble() * 0.4,
-                    z + horizontalForward.z + side.z * (random.nextDouble() * 0.6 - 0.3),
-                    0.0, 0.0, 0.0
-                )
+                if (random.nextDouble() < 0.1) {
+                    level().addParticle(
+                        ParticleTypes.SMOKE,
+                        x + horizontalForward.x + side.x * (random.nextDouble() * 0.6 - 0.3),
+                        y + random.nextDouble() * 0.4,
+                        z + horizontalForward.z + side.z * (random.nextDouble() * 0.6 - 0.3),
+                        0.0, 0.0, 0.0
+                    )
+                }
             }
 
             val heat = entityData.get(HEAT)
-            if (heat > 0) {
+            if (heat > 0 && random.nextDouble() < 0.1) {
                 val tierIndex = HEAT_TO_TIME.indexOfLast { (key) -> heat >= key }
                 HEAT_TO_PARTICLE[tierIndex](level(), this)
             }
