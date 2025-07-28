@@ -346,12 +346,12 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         val itemInHand by lazy { player.getItemInHand(hand) }
         val burnTime by lazy { ForgeHooks.getBurnTime(itemInHand, RecipeType.SMELTING) }
         return when {
-            player.mainHandItem.isEmpty && player.offhandItem.isEmpty -> {
+            !level().isClientSide && player.mainHandItem.isEmpty && player.offhandItem.isEmpty -> {
                 dropAllItems()
                 InteractionResult.CONSUME
             }
 
-            burnTime > 0 -> {
+            !level().isClientSide && burnTime > 0 -> {
                 entityData.set(HEAT, min(HEAT_TO_TIME.last().first, entityData.get(HEAT) + burnTime))
                 itemInHand.shrink(1)
                 InteractionResult.CONSUME
