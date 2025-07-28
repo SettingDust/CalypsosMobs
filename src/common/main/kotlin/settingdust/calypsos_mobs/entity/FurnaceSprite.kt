@@ -325,10 +325,10 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         targetItemEntity = null
     }
 
-    private fun dropAllItems() {
+    private fun dropAllItems(target: Vec3 = position().add(0.0, 1.0, 0.0)) {
         triggerAnim("ItemInteract", Animations.SPITS[random.nextInt(Animations.SPITS.size - 1)])
         this.inventory.removeAllItems()
-            .forEach { BehaviorUtils.throwItem(this, it, position().add(0.0, 1.0, 0.0)) }
+            .forEach { BehaviorUtils.throwItem(this, it, target) }
     }
 
     override fun dropEquipment() {
@@ -347,7 +347,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         val burnTime by lazy { ForgeHooks.getBurnTime(itemInHand, RecipeType.SMELTING) }
         return when {
             !level().isClientSide && player.mainHandItem.isEmpty && player.offhandItem.isEmpty -> {
-                dropAllItems()
+                dropAllItems(player.position())
                 InteractionResult.CONSUME
             }
 
