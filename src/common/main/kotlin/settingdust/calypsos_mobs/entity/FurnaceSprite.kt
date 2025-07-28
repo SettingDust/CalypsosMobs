@@ -107,76 +107,81 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         }
 
         val HEAT_TO_TIME = listOf(
-            0 * 20 to 10 * 20,
-            30 * 20 to 8 * 20,
-            60 * 20 to 4 * 20,
-            90 * 20 to 2 * 20
+            30 * 20 to 10 * 20,
+            60 * 20 to 8 * 20,
+            90 * 20 to 4 * 20,
+            120 * 20 to 2 * 20
         )
 
         val HEAT_TO_PARTICLE = arrayOf<(Level, FurnaceSprite) -> Unit>(
             { level, entity ->
-                val forward = entity.forward
-                val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
-
-                val side = Vec3(-forward.z, 0.0, forward.x).normalize()
+                if (entity.random.nextDouble() > 0.1) return@arrayOf
+                val offsetX = (entity.random.nextDouble() - 0.5) * 1.2
+                val offsetZ = (entity.random.nextDouble() - 0.5) * 1.2
 
                 level.addParticle(
                     ParticleTypes.FLAME,
-                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.6 - 0.3),
-                    entity.y + entity.random.nextDouble() * 0.4,
-                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.6 - 0.3),
+                    entity.x + offsetX,
+                    entity.y + 1.1 + (entity.random.nextDouble() - 0.5) * 0.2,
+                    entity.z + offsetZ,
                     0.0, 0.0, 0.0
                 )
             },
             { level, entity ->
-                val forward = entity.forward
-                val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
-
-                val side = Vec3(-forward.z, 0.0, forward.x).normalize()
-
                 repeat(2) {
+                    val offsetX = (entity.random.nextDouble() - 0.5) * 1.2
+                    val offsetZ = (entity.random.nextDouble() - 0.5) * 1.2
+                    if (entity.random.nextDouble() > 0.1) return@repeat
+
                     level.addParticle(
                         ParticleTypes.FLAME,
-                        entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.6 - 0.3),
-                        entity.y + entity.random.nextDouble() * 0.4,
-                        entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.6 - 0.3),
+                        entity.x + offsetX,
+                        entity.y + 1.1 + (entity.random.nextDouble() - 0.5) * 0.2,
+                        entity.z + offsetZ,
                         0.0, 0.0, 0.0
                     )
                 }
             },
             { level, entity ->
-                val forward = entity.forward
-                val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
+                run {
+                    val offsetX = (entity.random.nextDouble() - 0.5) * 1.2
+                    val offsetZ = (entity.random.nextDouble() - 0.5) * 1.2
+                    if (entity.random.nextDouble() > 0.1) return@run
 
-                val side = Vec3(-forward.z, 0.0, forward.x).normalize()
+                    level.addParticle(
+                        ParticleTypes.FLAME,
+                        entity.x + offsetX,
+                        entity.y + 1.1 + (entity.random.nextDouble() - 0.5) * 0.2,
+                        entity.z + offsetZ,
+                        0.0, 0.0, 0.0
+                    )
+                }
 
-                level.addParticle(
-                    ParticleTypes.FLAME,
-                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.6 - 0.3),
-                    entity.y + entity.random.nextDouble() * 0.4,
-                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.6 - 0.3),
-                    0.0, 0.0, 0.0
-                )
-                level.addParticle(
-                    ParticleTypes.SOUL_FIRE_FLAME,
-                    entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.6 - 0.3),
-                    entity.y + entity.random.nextDouble() * 0.4,
-                    entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.6 - 0.3),
-                    0.0, 0.0, 0.0
-                )
-            },
-            { level, entity ->
-                val forward = entity.forward
-                val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
+                run {
+                    val offsetX = (entity.random.nextDouble() - 0.5) * 1.2
+                    val offsetZ = (entity.random.nextDouble() - 0.5) * 1.2
+                    if (entity.random.nextDouble() > 0.1) return@run
 
-                val side = Vec3(-forward.z, 0.0, forward.x).normalize()
-
-                repeat(2) {
                     level.addParticle(
                         ParticleTypes.SOUL_FIRE_FLAME,
-                        entity.x + horizontalForward.x + side.x * (entity.random.nextDouble() * 0.6 - 0.3),
-                        entity.y + entity.random.nextDouble() * 0.4,
-                        entity.z + horizontalForward.z + side.z * (entity.random.nextDouble() * 0.6 - 0.3),
+                        entity.x + offsetX,
+                        entity.y + 1.1 + (entity.random.nextDouble() - 0.5) * 0.2,
+                        entity.z + offsetZ,
+                        0.0, 0.0, 0.0
+                    )
+                }
+            },
+            { level, entity ->
+                repeat(2) {
+                    val offsetX = (entity.random.nextDouble() - 0.5) * 1.2
+                    val offsetZ = (entity.random.nextDouble() - 0.5) * 1.2
+                    if (entity.random.nextDouble() > 0.1) return@repeat
+
+                    level.addParticle(
+                        ParticleTypes.SOUL_FIRE_FLAME,
+                        entity.x + offsetX,
+                        entity.y + 1.1 + (entity.random.nextDouble() - 0.5) * 0.2,
+                        entity.z + offsetZ,
                         0.0, 0.0, 0.0
                     )
                 }
@@ -348,15 +353,17 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         val itemInHand by lazy { player.getItemInHand(hand) }
         val burnTime by lazy { ForgeHooks.getBurnTime(itemInHand, RecipeType.SMELTING) }
         return when {
-            !level().isClientSide && player.mainHandItem.isEmpty && player.offhandItem.isEmpty -> {
+            player.mainHandItem.isEmpty && player.offhandItem.isEmpty -> {
                 dropAllItems()
-                InteractionResult.CONSUME
+                tryWakeUp()
+                InteractionResult.sidedSuccess(level().isClientSide)
             }
 
-            !level().isClientSide && burnTime > 0 -> {
+            burnTime > 0 -> {
                 entityData.set(HEAT, min(HEAT_TO_TIME.last().first, entityData.get(HEAT) + burnTime))
                 itemInHand.shrink(1)
-                InteractionResult.CONSUME
+                tryWakeUp()
+                InteractionResult.sidedSuccess(level().isClientSide)
             }
 
             else -> InteractionResult.PASS
@@ -376,7 +383,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             }
             entityData.set(HEAT, heat)
 
-            val neededTicks = HEAT_TO_TIME.last { (key) -> heat >= key }.second
+            val neededTicks = HEAT_TO_TIME.first { (key) -> heat <= key }.second
 
             if (heat > 0 && ++regenTimer >= 20) {
                 heal(1f)
@@ -387,8 +394,11 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             if (inventory.isEmpty) {
                 entityData.set(WORKING, false)
                 progress = 0.0
-                if (level().isNight || level().getRawBrightness(blockPosition(), 0) < 8) {
+                val sleepy = level().isNight || level().getRawBrightness(blockPosition(), 0) < 8
+                if (sleepy) {
                     entityData.set(SLEEPY_DURATION, entityData.get(SLEEPY_DURATION) + 1)
+                } else if (entityData.get(SLEEPY_DURATION) > SLEEP_THRESHOLD) {
+                    tryWakeUp()
                 }
                 return
             }
@@ -418,25 +428,11 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                         1.0f
                     )
                 }
-
-                val forward = forward
-                val horizontalForward = Vec3(forward.x, 0.0, forward.z).normalize().scale(0.6)
-                val side = Vec3(-forward.z, 0.0, forward.x).normalize()
-
-                if (random.nextDouble() < 0.1) {
-                    level().addParticle(
-                        ParticleTypes.SMOKE,
-                        x + horizontalForward.x + side.x * (random.nextDouble() * 0.6 - 0.3),
-                        y + random.nextDouble() * 0.4,
-                        z + horizontalForward.z + side.z * (random.nextDouble() * 0.6 - 0.3),
-                        0.0, 0.0, 0.0
-                    )
-                }
             }
 
             val heat = entityData.get(HEAT)
-            if (heat > 0 && random.nextDouble() < 0.1) {
-                val tierIndex = HEAT_TO_TIME.indexOfLast { (key) -> heat >= key }
+            if (heat > 0) {
+                val tierIndex = HEAT_TO_TIME.indexOfFirst { (key) -> heat <= key }
                 HEAT_TO_PARTICLE[tierIndex](level(), this)
             }
         }
