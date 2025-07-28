@@ -6,6 +6,8 @@ import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.SimpleContainer
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.EntityType
@@ -23,6 +25,7 @@ import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
+import net.minecraftforge.common.ForgeHooks
 import net.tslat.smartbrainlib.api.SmartBrainOwner
 import net.tslat.smartbrainlib.api.core.BrainActivityGroup
 import net.tslat.smartbrainlib.api.core.SmartBrainProvider
@@ -322,10 +325,43 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         targetItemEntity = null
     }
 
+    private fun dropAllItems() {
+        triggerAnim("ItemInteract", Animations.SPITS[random.nextInt(Animations.SPITS.size - 1)])
+        this.inventory.removeAllItems()
+            .forEach { BehaviorUtils.throwItem(this, it, position().add(0.0, 1.0, 0.0)) }
+    }
+
+    override fun dropEquipment() {
+        super.dropEquipment()
+        dropAllItems()
+    }
+
     override fun hurt(source: DamageSource, amount: Float): Boolean {
         tryWakeUp()
+        dropAllItems()
         return super.hurt(source, amount)
     }
+
+    override fun mobInteract(player: Player, hand: InteractionHand): InteractionResult {
+        val itemInHand by lazy { player.getItemInHand(hand) }
+        val burnTime by lazy { ForgeHooks.getBurnTime(itemInHand, RecipeType.SMELTING) }
+        return when {
+            player.mainHandItem.isEmpty && player.offhandItem.isEmpty -> {
+                dropAllItems()
+                InteractionResult.CONSUME
+            }
+
+            burnTime > 0 -> {
+                entityData.set(HEAT, min(HEAT_TO_TIME.last().first, entityData.get(HEAT) + burnTime))
+                itemInHand.shrink(1)
+                InteractionResult.CONSUME
+            }
+
+            else -> InteractionResult.PASS
+        }
+    }
+
+    private var regenTimer = 0
 
     override fun tick() {
         super.tick()
@@ -339,6 +375,12 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             entityData.set(HEAT, heat)
 
             val neededTicks = HEAT_TO_TIME.last { (key) -> heat >= key }.second
+
+            if (heat > 0 && ++regenTimer >= 20) {
+                heal(1f)
+            } else {
+                regenTimer = 0
+            }
 
             if (inventory.isEmpty) {
                 entityData.set(WORKING, false)
@@ -399,11 +441,6 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     }
 
     override fun getPickResult() = ItemStack(CalypsosMobsItems.FURNACE_SPRITE)
-
-    override fun dropEquipment() {
-        super.dropEquipment()
-        this.inventory.removeAllItems().forEach(::spawnAtLocation)
-    }
 
     override fun getBoundingBoxForCulling(): AABB {
         return super.getBoundingBoxForCulling().inflate(0.6)
