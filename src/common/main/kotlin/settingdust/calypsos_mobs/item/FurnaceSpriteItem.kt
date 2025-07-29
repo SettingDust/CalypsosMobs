@@ -1,16 +1,34 @@
 package settingdust.calypsos_mobs.item
 
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.Direction
+import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.MobSpawnType
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.item.context.UseOnContext
+import net.minecraft.world.level.Level
 import net.minecraft.world.level.gameevent.GameEvent
 import settingdust.calypsos_mobs.CalypsosMobsEntities
 import kotlin.math.atan2
 
 class FurnaceSpriteItem : Item(Properties().stacksTo(64)) {
+    override fun appendHoverText(
+        stack: ItemStack,
+        level: Level?,
+        components: MutableList<Component>,
+        isAdvanced: TooltipFlag
+    ) {
+        components.add(Component.translatable("item.calypsos_mobs.furnace_sprite.desc"))
+        if (level == null || !level.isClientSide || Screen.hasShiftDown()) {
+            repeat(5) {
+                components.add(Component.translatable("item.calypsos_mobs.furnace_sprite.desc$it"))
+            }
+        }
+    }
 
     override fun useOn(context: UseOnContext): InteractionResult {
         val level = context.level as? ServerLevel ?: return InteractionResult.SUCCESS

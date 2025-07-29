@@ -1,4 +1,10 @@
 {
   "item.calypsos_mobs.furnace_sprite": "熔炉精灵",
+  "item.calypsos_mobs.furnace_sprite.desc": "§6它会充满干劲的帮你熔炼地上的物品！",
+  "item.calypsos_mobs.furnace_sprite.desc0": "§7+自动捡起地上的东西并§6熔炼§7它们",
+  "item.calypsos_mobs.furnace_sprite.desc1": "§7+持续燃烧会获得§6热力值§7，§6热力值§7越高烧的越快",
+  "item.calypsos_mobs.furnace_sprite.desc2": "§7+停止燃烧后§6热力值§7会逐渐减少",
+  "item.calypsos_mobs.furnace_sprite.desc3": "§7+手持燃料右键可消耗燃料并增加§6热力值",
+  "item.calypsos_mobs.furnace_sprite.desc4": "§7+空手右键他来终止熔炼并取回物品",
   "entity.calypsos_mobs.furnace_sprite": "熔炉精灵"
 }
