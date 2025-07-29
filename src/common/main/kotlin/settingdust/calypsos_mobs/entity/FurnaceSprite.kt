@@ -350,11 +350,12 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     }
 
     override fun mobInteract(player: Player, hand: InteractionHand): InteractionResult {
-        val itemInHand by lazy { player.getItemInHand(hand) }
+        val itemInHand = player.getItemInHand(hand)
         val burnTime by lazy { ForgeHooks.getBurnTime(itemInHand, RecipeType.SMELTING) }
         return when {
-            player.mainHandItem.isEmpty && player.offhandItem.isEmpty -> {
-                dropAllItems()
+            itemInHand.isEmpty -> {
+                player.setItemInHand(hand, inventory.getItem(0))
+                inventory.clearContent()
                 tryWakeUp()
                 InteractionResult.sidedSuccess(level().isClientSide)
             }
