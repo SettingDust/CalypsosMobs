@@ -110,7 +110,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
             30 * 20 to 10 * 20,
             60 * 20 to 8 * 20,
             90 * 20 to 4 * 20,
-            120 * 20 to 2 * 20
+            160 * 20 to 2 * 20
         )
 
         val HEAT_TO_PARTICLE = arrayOf<(Level, FurnaceSprite) -> Unit>(
