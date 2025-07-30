@@ -73,7 +73,10 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         ONE(
             30 * 20,
             10 * 20,
-            { level, entity -> addWorkingParticle(level, entity, ParticleTypes.FLAME) }
+            { level, entity -> addWorkingParticle(level, entity, ParticleTypes.FLAME) },
+            { level, entity ->
+                addUpgradingParticle(level, entity) { if (entity.random.nextBoolean()) ParticleTypes.FLAME else null }
+            }
         ),
         TWO(
             60 * 20,
@@ -132,8 +135,10 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 }
             }
 
-            fun addUpgradingParticle(level: Level, entity: FurnaceSprite, particle: () -> ParticleOptions) {
+            fun addUpgradingParticle(level: Level, entity: FurnaceSprite, particle: () -> ParticleOptions?) {
                 repeat(10 + entity.random.nextInt(4)) {
+                    val particleOptions = particle() ?: return@repeat
+
                     val offset = Vec3.ZERO.offsetRandom(entity.random, 1f)
                         .multiply(1.0, .25, 1.0)
                         .normalize()
@@ -144,7 +149,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                     val speed = offset.scale(1 / 32.0)
 
                     level.addParticle(
-                        particle(),
+                        particleOptions,
                         translated.x,
                         translated.y,
                         translated.z,
