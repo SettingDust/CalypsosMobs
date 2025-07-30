@@ -471,7 +471,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 val sleepy = level().isNight || level().getRawBrightness(blockPosition(), 0) < 8
                 if (sleepy) {
                     sleepyDuration++
-                } else if (entityData.get(SLEEP)) {
+                } else if (entityData.get(SLEEP) && level().random.nextDouble() < 0.2) {
                     tryWakeUp()
                 }
                 return
