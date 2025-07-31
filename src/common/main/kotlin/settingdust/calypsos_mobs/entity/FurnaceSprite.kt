@@ -317,7 +317,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 entity.tryWakeUp()
                 (entity.inventory.isEmpty || canMerge)
                         && (targetItemEntity == null || targetItemEntity!!.isRemoved
-                        || entity.distanceToSqr(targetItemEntity) > entity.distanceTo(itemEntity))
+                        || entity.distanceToSqr(targetItemEntity!!) > entity.distanceTo(itemEntity))
             }.cooldownFor { 20 },
             LookAtTarget<FurnaceSprite>().runFor { 20 }.whenStarting { entity ->
                 val target = BrainUtils.getMemory(entity, MemoryModuleType.LOOK_TARGET)
@@ -454,6 +454,10 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
     override fun tick() {
         super.tick()
+        yBodyRot = yRot
+        yHeadRot = yRot
+        yBodyRotO = yRotO
+        yHeadRotO = yRotO
         if (!level().isClientSide) {
             heat = if (inventory.isEmpty) {
                 max(0, heat - 1)
