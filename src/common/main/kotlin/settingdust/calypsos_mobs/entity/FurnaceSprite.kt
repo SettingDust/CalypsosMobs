@@ -445,6 +445,23 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
                 setHeatLevel(heatLevel)
                 itemInHand.shrink(1)
                 tryWakeUp()
+                if (level().isClientSide) {
+                    triggerAnim("ItemInteract", "Absorb")
+                    repeat(4) {
+                        val d0 = random.nextGaussian() * 0.02
+                        val d1 = random.nextGaussian() * 0.02
+                        val d2 = random.nextGaussian() * 0.02
+                        this.level().addParticle(
+                            ParticleTypes.ANGRY_VILLAGER,
+                            getRandomX(1.0),
+                            randomY,
+                            getRandomZ(1.0),
+                            d0,
+                            d1,
+                            d2
+                        )
+                    }
+                }
                 InteractionResult.sidedSuccess(level().isClientSide)
             }
 
