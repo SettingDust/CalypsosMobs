@@ -7,6 +7,7 @@ import settingdust.calypsos_mobs.copy
 import settingdust.calypsos_mobs.entity.FurnaceSprite
 import settingdust.calypsos_mobs.mixin.GeoModelAccessor
 import software.bernie.geckolib.cache.`object`.BakedGeoModel
+import software.bernie.geckolib.cache.`object`.GeoBone
 import software.bernie.geckolib.model.DefaultedEntityGeoModel
 import software.bernie.geckolib.renderer.GeoEntityRenderer
 
@@ -18,9 +19,9 @@ class FurnaceSpriteRenderer(context: EntityRendererProvider.Context) :
 object FurnaceSpriteModel : DefaultedEntityGeoModel<FurnaceSprite>(CalypsosMobsKeys.FURNACE_SPRITE) {
 
     object Variants {
-        val CACHE = hashMapOf<Key, BakedGeoModel>()
+        val CACHE = hashMapOf<Context, BakedGeoModel>()
 
-        data class Key(val lit: Boolean)
+        data class Context(val working: Boolean, val level: FurnaceSprite.HeatLevel)
 
         fun interface Transformer {
             companion object {
@@ -32,19 +33,53 @@ object FurnaceSpriteModel : DefaultedEntityGeoModel<FurnaceSprite>(CalypsosMobsK
                 }
 
                 init {
-                    register { key, model ->
-                        val working = key.lit
-                        val bone = model.getBone("fire").orElseThrow()
-                        if (working) {
-                            bone.childBones.removeAt(bone.childBones.indexOfFirst { it.name == "fire_off" })
-                        } else {
-                            bone.childBones.removeAt(bone.childBones.indexOfFirst { it.name == "fire_on" })
+                    register { context, model ->
+                        val bone = model.getBone("eyeL").orElseThrow()
+                        val eyeLBones = buildMap<FurnaceSprite.HeatLevel, GeoBone> {
+                            this[FurnaceSprite.HeatLevel.ZERO] = bone.childBones.single { it.name == "eyeL_1" }
+                            bone.childBones.forEach {
+                                this[FurnaceSprite.HeatLevel.entries[it.name.last().digitToInt()]] = it
+                            }
                         }
+                        bone.childBones.clear()
+                        bone.childBones += eyeLBones[context.level]!!
+                    }
+
+                    register { context, model ->
+                        val bone = model.getBone("eyeR").orElseThrow()
+                        val eyeRBones = buildMap<FurnaceSprite.HeatLevel, GeoBone> {
+                            this[FurnaceSprite.HeatLevel.ZERO] = bone.childBones.single { it.name == "eyeR_1" }
+                            bone.childBones.forEach {
+                                this[FurnaceSprite.HeatLevel.entries[it.name.last().digitToInt()]] = it
+                            }
+                        }
+                        bone.childBones.clear()
+                        bone.childBones += eyeRBones[context.level]!!
+                    }
+
+                    register { context, model ->
+                        val bone = model.getBone("fire").orElseThrow()
+                        var fireWorkingBone: GeoBone? = null
+                        val fireLevelBones = mutableMapOf<FurnaceSprite.HeatLevel, GeoBone>()
+                        for (childBone in bone.childBones) {
+                            when {
+                                childBone.name == "fire_on" -> fireWorkingBone = childBone
+                                childBone.name == "fire_off" -> fireLevelBones[FurnaceSprite.HeatLevel.ZERO] = childBone
+
+                                childBone.name.startsWith("fire_ember_") ->
+                                    fireLevelBones[
+                                        FurnaceSprite.HeatLevel.entries[childBone.name.last().digitToInt()]
+                                    ] = childBone
+                            }
+                        }
+                        bone.childBones.clear()
+                        if (context.working) bone.childBones += fireWorkingBone!!
+                        else bone.childBones += fireLevelBones[context.level]!!
                     }
                 }
             }
 
-            fun transform(key: Key, model: BakedGeoModel)
+            fun transform(context: Context, model: BakedGeoModel)
         }
     }
 
@@ -54,7 +89,12 @@ object FurnaceSpriteModel : DefaultedEntityGeoModel<FurnaceSprite>(CalypsosMobsK
         val bakedModel = super.getBakedModel(location)
         if (currentEntity == null) return bakedModel
         val transformed =
-            Variants.CACHE.computeIfAbsent(Variants.Key(currentEntity!!.entityData.get(FurnaceSprite.WORKING))) { key ->
+            Variants.CACHE.computeIfAbsent(
+                Variants.Context(
+                    currentEntity!!.entityData.get(FurnaceSprite.WORKING),
+                    currentEntity!!.entityData.get(FurnaceSprite.HEAT_LEVEL)
+                )
+            ) { key ->
                 val model = bakedModel.copy()
                 Variants.Transformer.ALL.forEach { it.transform(key, model) }
                 model
