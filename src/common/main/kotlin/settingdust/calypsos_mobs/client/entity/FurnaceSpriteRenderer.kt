@@ -102,7 +102,7 @@ object FurnaceSpriteModel : DefaultedEntityGeoModel<FurnaceSprite>(CalypsosMobsK
         currentEntity = null
         if (transformed !== bakedModel) {
             this.animationProcessor.setActiveModel(transformed)
-            (this as GeoModelAccessor).currentModel = transformed
+            (this as GeoModelAccessor).setCurrentModel(transformed)
         }
         return transformed
     }

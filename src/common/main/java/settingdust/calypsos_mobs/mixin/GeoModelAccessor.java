@@ -8,8 +8,5 @@ import software.bernie.geckolib.model.GeoModel;
 @Mixin(GeoModel.class)
 public interface GeoModelAccessor {
     @Accessor
-    BakedGeoModel getCurrentModel();
-
-    @Accessor
     void setCurrentModel(BakedGeoModel model);
 }

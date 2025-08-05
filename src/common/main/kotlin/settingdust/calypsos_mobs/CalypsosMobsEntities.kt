@@ -2,8 +2,6 @@ package settingdust.calypsos_mobs
 
 import net.minecraft.client.renderer.entity.EntityRenderers
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.network.syncher.EntityDataAccessor
-import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.MobCategory
@@ -12,7 +10,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent
 import settingdust.calypsos_mobs.client.entity.FurnaceSpriteRenderer
 import settingdust.calypsos_mobs.entity.FurnaceSprite
-import settingdust.calypsos_mobs.mixin.SynchedEntityDataAccessor
 import thedarkcolour.kotlinforforge.KotlinModLoadingContext
 
 @Suppress("DEPRECATION", "UNCHECKED_CAST")
@@ -50,6 +47,3 @@ object CalypsosMobsEntities {
         )
     }
 }
-
-internal fun <T> SynchedEntityData.getItem(key: EntityDataAccessor<T>) =
-    (this as SynchedEntityDataAccessor).invokeGetItem(key)
