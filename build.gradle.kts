@@ -132,11 +132,11 @@ cloche {
 
         dependencies {
             implementation("org.spongepowered:mixin:0.8.7")
-            "io.github.llamalad7:mixinextras-common:0.5.0-rc.4".let {
+            "io.github.llamalad7:mixinextras-common:0.5.0".let {
                 implementation(it)
                 annotationProcessor(it)
             }
-            "io.github.llamalad7:mixinextras-forge:0.5.0-rc.4".let {
+            "io.github.llamalad7:mixinextras-forge:0.5.0".let {
                 implementation(it)
                 include(it)
             }
