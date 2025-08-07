@@ -141,7 +141,7 @@ cloche {
                 include(it)
             }
 
-            modImplementation("thedarkcolour:kotlinforforge:4.11.0")
+            modImplementation("thedarkcolour:kotlinforforge:5.9.0")
 
             modImplementation("software.bernie.geckolib:geckolib-forge-1.20.1:4.7.3")
             implementation("com.eliotlash.mclib:mclib:20")
