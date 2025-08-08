@@ -5,8 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "calypsos_mobs.refmap.json",
   "mixins": [
-    "GeoModelAccessor",
-    "SynchedEntityDataAccessor"
+    "GeoModelAccessor"
   ],
   "client": [
   ]
