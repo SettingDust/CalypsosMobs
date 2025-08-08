@@ -1,4 +1,10 @@
 {
   "item.calypsos_mobs.furnace_sprite": "Furnace Sprite",
+  "item.calypsos_mobs.furnace_sprite.desc": "§6It will eagerly help you smelt items on the ground!",
+  "item.calypsos_mobs.furnace_sprite.desc0": "§7+ Automatically picks up items on the ground and §6smelts§7 them",
+  "item.calypsos_mobs.furnace_sprite.desc1": "§7+ The longer it burns, the more §6heat§7 it gains, and the §6faster§7 it smelts",
+  "item.calypsos_mobs.furnace_sprite.desc2": "§7+ After it stops burning, its §6heat§7 gradually decreases",
+  "item.calypsos_mobs.furnace_sprite.desc3": "§7+ Right-click with fuel in hand to consume fuel and increase §6heat§7",
+  "item.calypsos_mobs.furnace_sprite.desc4": "§7+ Right-click it with empty hands to stop smelting and retrieve the items",
   "entity.calypsos_mobs.furnace_sprite": "Furnace Sprite"
 }
