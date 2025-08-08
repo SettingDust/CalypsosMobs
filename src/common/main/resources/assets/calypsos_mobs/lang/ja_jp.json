@@ -1,4 +1,10 @@
 {
   "item.calypsos_mobs.furnace_sprite": "かまどスプライト",
+  "item.calypsos_mobs.furnace_sprite.desc": "§6地面にあるアイテムを一生懸命に精錬してくれます！",
+  "item.calypsos_mobs.furnace_sprite.desc0": "§7+ 地面のアイテムを自動で拾って§6精錬§7します",
+  "item.calypsos_mobs.furnace_sprite.desc1": "§7+ 燃焼し続けると§6熱§7を得て、§6熱§7が高いほど精錬が早くなります",
+  "item.calypsos_mobs.furnace_sprite.desc2": "§7+ 燃焼が止まると§6熱§7は徐々に減少します",
+  "item.calypsos_mobs.furnace_sprite.desc3": "§7+ 手に燃料を持って右クリックすると、燃料を消費して§6熱§7を増加させます",
+  "item.calypsos_mobs.furnace_sprite.desc4": "§7+ 手ぶらで右クリックすると精錬を停止し、アイテムを取り戻します",
   "entity.calypsos_mobs.furnace_sprite": "かまどスプライト"
 }
