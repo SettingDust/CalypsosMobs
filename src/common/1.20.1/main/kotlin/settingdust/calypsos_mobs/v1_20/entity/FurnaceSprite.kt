@@ -1,10 +1,8 @@
-package settingdust.calypsos_mobs.entity
+package settingdust.calypsos_mobs.v1_20.entity
 
-import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.syncher.EntityDataAccessor
-import net.minecraft.network.syncher.EntityDataSerializer
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.sounds.SoundEvents
@@ -27,7 +25,6 @@ import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
-import net.minecraftforge.common.ForgeHooks
 import net.tslat.smartbrainlib.api.SmartBrainOwner
 import net.tslat.smartbrainlib.api.core.BrainActivityGroup
 import net.tslat.smartbrainlib.api.core.SmartBrainProvider
@@ -43,9 +40,12 @@ import net.tslat.smartbrainlib.api.core.sensor.vanilla.HurtBySensor
 import net.tslat.smartbrainlib.api.core.sensor.vanilla.NearbyPlayersSensor
 import net.tslat.smartbrainlib.api.core.sensor.vanilla.NearestItemSensor
 import net.tslat.smartbrainlib.util.BrainUtils
-import settingdust.calypsos_mobs.CalypsosMobsItems
 import settingdust.calypsos_mobs.WeightedMap
+import settingdust.calypsos_mobs.adapter.LoaderAdapter.Companion.getBurnTime
+import settingdust.calypsos_mobs.adapter.LoaderAdapter.Companion.onCreatedInLevel
 import settingdust.calypsos_mobs.brain.behaviour.MoveToNearestVisibleWantedItem
+import settingdust.calypsos_mobs.v1_20.CalypsosMobsItems
+import settingdust.calypsos_mobs.v1_20.util.HeatLevel
 import software.bernie.geckolib.animatable.GeoEntity
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.core.animation.AnimatableManager
@@ -57,110 +57,11 @@ import software.bernie.geckolib.util.GeckoLibUtil
 import kotlin.math.max
 import kotlin.math.min
 
-
 class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     PathfinderMob(type, level),
     GeoEntity,
     SmartBrainOwner<FurnaceSprite>,
     InventoryCarrier {
-    enum class HeatLevel(
-        val maxHeatTicks: Int,
-        val smeltingTicks: Int,
-        val activatingParticle: ((Level, FurnaceSprite) -> Unit)? = null,
-        val upgradingParticle: ((Level, FurnaceSprite) -> Unit)? = null
-    ) {
-        ZERO(0, 10 * 20),
-        ONE(
-            30 * 20,
-            10 * 20,
-            { level, entity -> addWorkingParticle(level, entity, ParticleTypes.FLAME) },
-            { level, entity ->
-                addUpgradingParticle(level, entity) { if (entity.random.nextBoolean()) ParticleTypes.FLAME else null }
-            }
-        ),
-        TWO(
-            60 * 20,
-            8 * 20,
-            { level, entity -> addWorkingParticle(level, entity, ParticleTypes.FLAME, 2) },
-            { level, entity -> addUpgradingParticle(level, entity) { ParticleTypes.FLAME } }
-        ),
-        THREE(
-            90 * 20,
-            4 * 20,
-            { level, entity ->
-                repeat(2) {
-                    addWorkingParticle(
-                        level,
-                        entity,
-                        if (entity.random.nextBoolean()) ParticleTypes.FLAME else ParticleTypes.SOUL_FIRE_FLAME
-                    )
-                }
-            },
-            { level, entity ->
-                addUpgradingParticle(
-                    level,
-                    entity
-                ) { if (entity.random.nextBoolean()) ParticleTypes.FLAME else ParticleTypes.SOUL_FIRE_FLAME }
-            }
-        ),
-        FOUR(
-            160 * 20,
-            2 * 20,
-            { level, entity -> addWorkingParticle(level, entity, ParticleTypes.SOUL_FIRE_FLAME, 2) },
-            { level, entity -> addUpgradingParticle(level, entity) { ParticleTypes.SOUL_FIRE_FLAME } }
-        );
-
-        companion object {
-            val last by lazy { entries.last() }
-
-            fun fromHeat(heat: Int) = HeatLevel.entries.first { heat <= it.maxHeatTicks }
-
-            private fun addWorkingParticle(
-                level: Level,
-                entity: FurnaceSprite,
-                particle: ParticleOptions,
-                count: Int = 1
-            ) {
-                repeat(count) {
-                    if (entity.random.nextDouble() > 0.1) return@repeat
-                    val offsetX = (entity.random.nextDouble() - 0.5) * 1.2
-                    val offsetZ = (entity.random.nextDouble() - 0.5) * 1.2
-                    level.addParticle(
-                        particle,
-                        entity.x + offsetX,
-                        entity.y + 1.1 + (entity.random.nextDouble() - 0.5) * 0.2,
-                        entity.z + offsetZ,
-                        0.0, 0.0, 0.0
-                    )
-                }
-            }
-
-            fun addUpgradingParticle(level: Level, entity: FurnaceSprite, particle: () -> ParticleOptions?) {
-                repeat(10 + entity.random.nextInt(4)) {
-                    val particleOptions = particle() ?: return@repeat
-
-                    val offset = Vec3.ZERO.offsetRandom(entity.random, 1f)
-                        .multiply(1.0, .25, 1.0)
-                        .normalize()
-
-                    val translated =
-                        entity.position().add(offset.scale(.5 + entity.random.nextDouble() * .125)).add(0.0, .125, 0.0)
-
-                    val speed = offset.scale(1 / 32.0)
-
-                    level.addParticle(
-                        particleOptions,
-                        translated.x,
-                        translated.y,
-                        translated.z,
-                        speed.x, speed.y, speed.z
-                    )
-                }
-            }
-        }
-
-        fun isAtLeast(level: HeatLevel) = this.ordinal >= level.ordinal
-    }
 
     companion object {
         @JvmStatic
@@ -171,17 +72,13 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         val SLEEP: EntityDataAccessor<Boolean> =
             SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.BOOLEAN)
 
-
-        val heatLevelSerializer = EntityDataSerializer.simpleEnum(HeatLevel::class.java)
-            .apply { EntityDataSerializers.registerSerializer(this) }
-
         @JvmStatic
         val HEAT_LEVEL: EntityDataAccessor<HeatLevel> =
-            SynchedEntityData.defineId(FurnaceSprite::class.java, heatLevelSerializer)
+            SynchedEntityData.defineId(FurnaceSprite::class.java, HeatLevel.dataSerializer)
 
         @JvmStatic
         val PREV_HEAT_LEVEL: EntityDataAccessor<HeatLevel> =
-            SynchedEntityData.defineId(FurnaceSprite::class.java, heatLevelSerializer)
+            SynchedEntityData.defineId(FurnaceSprite::class.java, HeatLevel.dataSerializer)
 
         @JvmStatic
         val WORKING: EntityDataAccessor<Boolean> =
@@ -220,6 +117,11 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
     init {
         setPersistenceRequired()
         setCanPickUpLoot(true)
+
+        onCreatedInLevel {
+            if (level().isClientSide) return@onCreatedInLevel
+            triggerAnim("WakeUp", "WakeUp")
+        }
     }
 
     private val inventory = SimpleContainer(1)
@@ -430,7 +332,7 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
     override fun mobInteract(player: Player, hand: InteractionHand): InteractionResult {
         val itemInHand = player.getItemInHand(hand)
-        val burnTime by lazy { ForgeHooks.getBurnTime(itemInHand, RecipeType.SMELTING) }
+        val burnTime by lazy { itemInHand.getBurnTime() }
         return when {
             itemInHand.isEmpty -> {
                 player.setItemInHand(hand, inventory.getItem(0))
@@ -559,14 +461,5 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
         sleepyDuration = compound.getInt("SleepyDuration")
         entityData.set(SLEEP, sleepyDuration >= SLEEP_THRESHOLD)
         entityData.set(WORKING, compound.getBoolean("Working"))
-    }
-
-    override fun onAddedToWorld() {
-        super.onAddedToWorld()
-        if (level().isClientSide) return
-        if (!entityData.get(INITIALIZED)) {
-            entityData.set(INITIALIZED, true)
-            triggerAnim("WakeUp", "WakeUp")
-        }
     }
 }

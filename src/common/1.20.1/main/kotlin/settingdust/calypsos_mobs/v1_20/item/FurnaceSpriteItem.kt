@@ -1,4 +1,4 @@
-package settingdust.calypsos_mobs.item
+package settingdust.calypsos_mobs.v1_20.item
 
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.Direction
@@ -12,7 +12,7 @@ import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.gameevent.GameEvent
-import settingdust.calypsos_mobs.CalypsosMobsEntities
+import settingdust.calypsos_mobs.v1_20.CalypsosMobsEntities
 import kotlin.math.atan2
 
 class FurnaceSpriteItem : Item(Properties().stacksTo(64)) {

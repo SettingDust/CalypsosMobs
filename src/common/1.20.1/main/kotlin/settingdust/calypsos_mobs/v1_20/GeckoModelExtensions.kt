@@ -1,11 +1,10 @@
-package settingdust.calypsos_mobs
+package settingdust.calypsos_mobs.v1_20
 
 import software.bernie.geckolib.cache.`object`.BakedGeoModel
 import software.bernie.geckolib.cache.`object`.GeoBone
 
-
 fun BakedGeoModel.copy(): BakedGeoModel {
-    return BakedGeoModel(this.topLevelBones.mapTo(mutableListOf()) { it.copy() }, this.properties)
+    return BakedGeoModel(this.topLevelBones().mapTo(mutableListOf()) { it.copy() }, this.properties())
 }
 
 fun GeoBone.copy(parent: GeoBone? = null): GeoBone = GeoBone(

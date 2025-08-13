@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "settingdust.calypsos_mobs.fabric.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "calypsos_mobs.fabric.refmap.json",
+  "mixins": [
+    "ServerLevel_EntityCallbacksMixin"
+  ],
+  "client": [
+  ]
+}
