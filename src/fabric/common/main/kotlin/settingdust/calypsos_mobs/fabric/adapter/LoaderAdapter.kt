@@ -17,7 +17,7 @@ import settingdust.calypsos_mobs.adapter.LoaderAdapter
 import settingdust.calypsos_mobs.fabric.ServerEntityCreatedEvents
 
 class LoaderAdapter : LoaderAdapter {
-    override fun ItemStack.getBurnTime() = FuelRegistry.INSTANCE.get(item)
+    override fun ItemStack.getBurnTime(): Int = FuelRegistry.INSTANCE.get(item)
 
     override fun <T : Entity> T.onCreatedInLevel(callback: () -> Unit) =
         ServerEntityCreatedEvents.CREATED.register { entity, _ ->

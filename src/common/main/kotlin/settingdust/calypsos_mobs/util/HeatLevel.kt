@@ -1,18 +1,20 @@
-package settingdust.calypsos_mobs.v1_20.util
+package settingdust.calypsos_mobs.util
 
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.syncher.EntityDataSerializer
 import net.minecraft.network.syncher.EntityDataSerializers
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import settingdust.calypsos_mobs.v1_20.entity.FurnaceSprite
+import settingdust.calypsos_mobs.adapter.MinecraftAdapter.Companion.createHeatLevelDataSerializer
 
 enum class HeatLevel(
     val maxHeatTicks: Int,
     val smeltingTicks: Int,
-    val activatingParticle: ((Level, FurnaceSprite) -> Unit)? = null,
-    val upgradingParticle: ((Level, FurnaceSprite) -> Unit)? = null
+    val activatingParticle: ((Level, LivingEntity) -> Unit)? = null,
+    val upgradingParticle: ((Level, LivingEntity) -> Unit)? = null
 ) {
     ZERO(0, 10 * 20),
     ONE(
@@ -56,8 +58,9 @@ enum class HeatLevel(
     );
 
     companion object {
-        val dataSerializer = EntityDataSerializer.simpleEnum(HeatLevel::class.java)
-            .apply { EntityDataSerializers.registerSerializer(this) }
+        val DATA_SERIALIZER: EntityDataSerializer<HeatLevel> = createHeatLevelDataSerializer().also {
+            EntityDataSerializers.registerSerializer(it)
+        }
 
         val last by lazy { entries.last() }
 
@@ -65,7 +68,7 @@ enum class HeatLevel(
 
         private fun addWorkingParticle(
             level: Level,
-            entity: FurnaceSprite,
+            entity: Entity,
             particle: ParticleOptions,
             count: Int = 1
         ) {
@@ -83,7 +86,7 @@ enum class HeatLevel(
             }
         }
 
-        fun addUpgradingParticle(level: Level, entity: FurnaceSprite, particle: () -> ParticleOptions?) {
+        fun addUpgradingParticle(level: Level, entity: Entity, particle: () -> ParticleOptions?) {
             repeat(10 + entity.random.nextInt(4)) {
                 val particleOptions = particle() ?: return@repeat
 

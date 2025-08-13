@@ -1,4 +1,4 @@
-package settingdust.calypsos_mobs.v1_20.entity
+package settingdust.calypsos_mobs.v1_21.entity
 
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.nbt.CompoundTag
@@ -44,15 +44,9 @@ import settingdust.calypsos_mobs.WeightedMap
 import settingdust.calypsos_mobs.adapter.LoaderAdapter.Companion.getBurnTime
 import settingdust.calypsos_mobs.adapter.LoaderAdapter.Companion.onCreatedInLevel
 import settingdust.calypsos_mobs.brain.behaviour.MoveToNearestVisibleWantedItem
-import settingdust.calypsos_mobs.util.HeatLevel
-import settingdust.calypsos_mobs.v1_20.CalypsosMobsItems
+import settingdust.calypsos_mobs.v1_21.util.HeatLevel
 import software.bernie.geckolib.animatable.GeoEntity
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache
-import software.bernie.geckolib.core.animation.AnimatableManager
-import software.bernie.geckolib.core.animation.Animation
-import software.bernie.geckolib.core.animation.AnimationController
-import software.bernie.geckolib.core.animation.RawAnimation
-import software.bernie.geckolib.core.`object`.PlayState
+import software.bernie.geckolib.animation.RawAnimation
 import software.bernie.geckolib.util.GeckoLibUtil
 import kotlin.math.max
 import kotlin.math.min
@@ -74,11 +68,11 @@ class FurnaceSprite(type: EntityType<FurnaceSprite>, level: Level) :
 
         @JvmStatic
         val HEAT_LEVEL: EntityDataAccessor<HeatLevel> =
-            SynchedEntityData.defineId(FurnaceSprite::class.java, HeatLevel.DATA_SERIALIZER)
+            SynchedEntityData.defineId(FurnaceSprite::class.java, HeatLevel.dataSerializer)
 
         @JvmStatic
         val PREV_HEAT_LEVEL: EntityDataAccessor<HeatLevel> =
-            SynchedEntityData.defineId(FurnaceSprite::class.java, HeatLevel.DATA_SERIALIZER)
+            SynchedEntityData.defineId(FurnaceSprite::class.java, HeatLevel.dataSerializer)
 
         @JvmStatic
         val WORKING: EntityDataAccessor<Boolean> =
