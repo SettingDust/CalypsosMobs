@@ -134,12 +134,12 @@ cloche {
         metadata {
             entrypoint("main") {
                 adapter = "kotlin"
-                value = "settingdust.calypsos_mobs.fabric.EntrypointKt::init"
+                value = "settingdust.calypsos_mobs.fabric.Entrypoint::init"
             }
 
             entrypoint("client") {
                 adapter = "kotlin"
-                value = "settingdust.calypsos_mobs.fabric.EntrypointKt::clientInit"
+                value = "settingdust.calypsos_mobs.fabric.Entrypoint::clientInit"
             }
 
             dependency {

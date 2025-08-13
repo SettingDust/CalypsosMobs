@@ -14,6 +14,8 @@ import settingdust.calypsos_mobs.ServiceLoaderUtil
 interface LoaderAdapter {
     companion object : LoaderAdapter by ServiceLoaderUtil.findService()
 
+    val isClient: Boolean
+
     fun ItemStack.getBurnTime(): Int
 
     fun <T : Entity> T.onCreatedInLevel(callback: () -> Unit)

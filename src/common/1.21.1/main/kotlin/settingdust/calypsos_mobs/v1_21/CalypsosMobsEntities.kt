@@ -1,4 +1,4 @@
-package settingdust.calypsos_mobs.v1_20
+package settingdust.calypsos_mobs.v1_21
 
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.EntityType
@@ -9,8 +9,8 @@ import settingdust.calypsos_mobs.CalypsosMobsEntities
 import settingdust.calypsos_mobs.CalypsosMobsKeys
 import settingdust.calypsos_mobs.adapter.LoaderAdapter.Companion.defaultAttributes
 import settingdust.calypsos_mobs.adapter.LoaderAdapter.Companion.rendererProvider
-import settingdust.calypsos_mobs.v1_20.client.entity.FurnaceSpriteRenderer
-import settingdust.calypsos_mobs.v1_20.entity.FurnaceSprite
+import settingdust.calypsos_mobs.v1_21.client.entity.FurnaceSpriteRenderer
+import settingdust.calypsos_mobs.v1_21.entity.FurnaceSprite
 
 class CalypsosMobsEntities : CalypsosMobsEntities {
     override fun registerTypes(register: (ResourceLocation, EntityType<*>) -> Unit) {

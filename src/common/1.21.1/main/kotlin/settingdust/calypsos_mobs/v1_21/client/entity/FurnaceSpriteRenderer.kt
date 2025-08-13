@@ -1,8 +1,8 @@
-package settingdust.calypsos_mobs.v1_20.client.entity
+package settingdust.calypsos_mobs.v1_21.client.entity
 
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.resources.ResourceLocation
-import settingdust.calypsos_mobs.v1_20.entity.FurnaceSprite
+import settingdust.calypsos_mobs.v1_21.entity.FurnaceSprite
 import software.bernie.geckolib.cache.`object`.BakedGeoModel
 import software.bernie.geckolib.renderer.GeoEntityRenderer
 

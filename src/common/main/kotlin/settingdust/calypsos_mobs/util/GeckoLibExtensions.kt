@@ -1,4 +1,4 @@
-package settingdust.calypsos_mobs.v1_20
+package settingdust.calypsos_mobs.util
 
 import software.bernie.geckolib.cache.`object`.BakedGeoModel
 import software.bernie.geckolib.cache.`object`.GeoBone

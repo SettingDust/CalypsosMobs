@@ -3,12 +3,10 @@ package settingdust.calypsos_mobs.util
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.syncher.EntityDataSerializer
-import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import settingdust.calypsos_mobs.adapter.MinecraftAdapter.Companion.createHeatLevelDataSerializer
 
 enum class HeatLevel(
     val maxHeatTicks: Int,
@@ -58,9 +56,7 @@ enum class HeatLevel(
     );
 
     companion object {
-        val DATA_SERIALIZER: EntityDataSerializer<HeatLevel> = createHeatLevelDataSerializer().also {
-            EntityDataSerializers.registerSerializer(it)
-        }
+        lateinit var DATA_SERIALIZER: EntityDataSerializer<HeatLevel>
 
         val last by lazy { entries.last() }
 

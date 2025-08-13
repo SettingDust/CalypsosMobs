@@ -1,9 +1,11 @@
 package settingdust.calypsos_mobs.fabric.adapter
 
+import net.fabricmc.api.EnvType
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
 import net.fabricmc.fabric.api.`object`.builder.v1.entity.FabricDefaultAttributeRegistry
 import net.fabricmc.fabric.api.registry.FuelRegistry
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.resources.ResourceKey
 import net.minecraft.world.entity.Entity
@@ -17,6 +19,9 @@ import settingdust.calypsos_mobs.adapter.LoaderAdapter
 import settingdust.calypsos_mobs.fabric.ServerEntityCreatedEvents
 
 class LoaderAdapter : LoaderAdapter {
+    override val isClient: Boolean
+        get() = FabricLoader.getInstance().environmentType === EnvType.CLIENT
+
     override fun ItemStack.getBurnTime(): Int = FuelRegistry.INSTANCE.get(item)
 
     override fun <T : Entity> T.onCreatedInLevel(callback: () -> Unit) =

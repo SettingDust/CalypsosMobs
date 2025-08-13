@@ -3,7 +3,6 @@ package settingdust.calypsos_mobs
 import org.apache.logging.log4j.LogManager
 import settingdust.calypsos_mobs.adapter.MinecraftAdapter.Companion.ResourceLocation
 
-
 object CalypsosMobs {
     const val ID = "calypsos_mobs"
 

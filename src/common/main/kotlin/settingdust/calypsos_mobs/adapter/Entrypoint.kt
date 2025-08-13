@@ -6,6 +6,10 @@ interface Entrypoint {
     companion object : Entrypoint {
         private val services by lazy { ServiceLoaderUtil.findServices<Entrypoint>(required = false) }
 
+        override fun construct() {
+            services.forEach { it.construct() }
+        }
+
         override fun init() {
             services.forEach { it.init() }
         }
@@ -14,6 +18,8 @@ interface Entrypoint {
             services.forEach { it.clientInit() }
         }
     }
+
+    fun construct() {}
 
     fun init() {}
 

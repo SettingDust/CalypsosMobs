@@ -20,6 +20,9 @@ import settingdust.calypsos_mobs.adapter.LoaderAdapter
 import thedarkcolour.kotlinforforge.forge.MOD_BUS
 
 class LoaderAdapter : LoaderAdapter {
+    override val isClient: Boolean
+        get() = FMLLoader.getDist().isClient
+
     override fun ItemStack.getBurnTime() = ForgeHooks.getBurnTime(this, null)
 
     override fun <T : Entity> T.onCreatedInLevel(callback: () -> Unit) {

@@ -1,10 +1,10 @@
-package settingdust.calypsos_mobs.v1_20
+package settingdust.calypsos_mobs.v1_21
 
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.Item
 import settingdust.calypsos_mobs.CalypsosMobsItems
 import settingdust.calypsos_mobs.CalypsosMobsKeys
-import settingdust.calypsos_mobs.v1_20.item.FurnaceSpriteItem
+import settingdust.calypsos_mobs.v1_21.item.FurnaceSpriteItem
 
 class CalypsosMobsItems : CalypsosMobsItems {
     override fun registerItems(register: (ResourceLocation, Item) -> Unit) {
