@@ -159,6 +159,16 @@ cloche {
     fabric("fabric:1.20.1") {
         minecraftVersion = "1.20.1"
 
+        metadata {
+            dependency {
+                modId = "minecraft"
+                version {
+                    start = "1.20.1"
+                    end = "1.21"
+                }
+            }
+        }
+
         dependencies {
             fabricApi("0.92.6")
 
@@ -171,6 +181,15 @@ cloche {
 
     fabric("fabric:1.21") {
         minecraftVersion = "1.21.1"
+
+        metadata {
+            dependency {
+                modId = "minecraft"
+                version {
+                    start = "1.21"
+                }
+            }
+        }
 
         dependencies {
             fabricApi("0.116.5")
@@ -188,6 +207,14 @@ cloche {
             modLoader = "kotlinforforge"
             loaderVersion {
                 start = "4"
+            }
+
+            dependency {
+                modId = "minecraft"
+                version {
+                    start = "1.20.1"
+                    end = "1.21"
+                }
             }
         }
 
@@ -221,6 +248,13 @@ cloche {
             modLoader = "kotlinforforge"
             loaderVersion {
                 start = "5"
+            }
+
+            dependency {
+                modId = "minecraft"
+                version {
+                    start = "1.21"
+                }
             }
         }
 
