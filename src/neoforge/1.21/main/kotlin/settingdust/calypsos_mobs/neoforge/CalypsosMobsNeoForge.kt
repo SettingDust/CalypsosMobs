@@ -1,18 +1,18 @@
-package settingdust.calypsos_mobs.forge
+package settingdust.calypsos_mobs.neoforge
 
 import net.minecraft.core.registries.Registries
-import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
-import net.minecraftforge.registries.RegisterEvent
+import net.neoforged.fml.common.Mod
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent
+import net.neoforged.neoforge.registries.RegisterEvent
 import settingdust.calypsos_mobs.CalypsosMobs
 import settingdust.calypsos_mobs.CalypsosMobsEntities
 import settingdust.calypsos_mobs.CalypsosMobsItems
 import settingdust.calypsos_mobs.adapter.Entrypoint
-import thedarkcolour.kotlinforforge.forge.MOD_BUS
+import thedarkcolour.kotlinforforge.neoforge.forge.MOD_BUS
 
 @Mod(CalypsosMobs.ID)
-object CalypsosMobsForge {
+object CalypsosMobsNeoForge {
     init {
         requireNotNull(CalypsosMobs)
         Entrypoint.construct()

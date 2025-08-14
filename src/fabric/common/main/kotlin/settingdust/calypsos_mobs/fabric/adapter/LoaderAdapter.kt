@@ -7,7 +7,10 @@ import net.fabricmc.fabric.api.`object`.builder.v1.entity.FabricDefaultAttribute
 import net.fabricmc.fabric.api.registry.FuelRegistry
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.renderer.entity.EntityRendererProvider
+import net.minecraft.network.syncher.EntityDataSerializer
+import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.resources.ResourceKey
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.LivingEntity
@@ -39,5 +42,9 @@ class LoaderAdapter : LoaderAdapter {
 
     override fun <T : Item> T.creativeTab(key: ResourceKey<CreativeModeTab>) {
         ItemGroupEvents.modifyEntriesEvent(key).register { it.accept(this) }
+    }
+
+    override fun registerEntityDataSerializer(id: ResourceLocation, serializer: EntityDataSerializer<*>) {
+        EntityDataSerializers.registerSerializer(serializer)
     }
 }

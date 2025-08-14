@@ -6,7 +6,9 @@ import net.minecraft.network.codec.StreamCodec
 import net.minecraft.network.syncher.EntityDataSerializer
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
+import settingdust.calypsos_mobs.CalypsosMobsKeys
 import settingdust.calypsos_mobs.adapter.Entrypoint
+import settingdust.calypsos_mobs.adapter.LoaderAdapter
 import settingdust.calypsos_mobs.entity.FurnaceSprite
 import settingdust.calypsos_mobs.util.HeatLevel
 
@@ -20,7 +22,7 @@ class FurnaceSpriteEntrypoint : Entrypoint {
     override fun construct() {
         HeatLevel.DATA_SERIALIZER =
             EntityDataSerializer.forValueType(HEAT_LEVEL_STREAM_CODEC).also {
-                EntityDataSerializers.registerSerializer(it)
+                LoaderAdapter.registerEntityDataSerializer(CalypsosMobsKeys.HEAT_LEVEL, it)
             }
         FurnaceSprite.INITIALIZED =
             SynchedEntityData.defineId(FurnaceSprite::class.java, EntityDataSerializers.BOOLEAN)

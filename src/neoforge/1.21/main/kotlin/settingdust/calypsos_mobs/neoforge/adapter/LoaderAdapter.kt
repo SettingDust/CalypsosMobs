@@ -1,9 +1,8 @@
-package settingdust.calypsos_mobs.forge.adapter
+package settingdust.calypsos_mobs.neoforge.adapter
 
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.entity.EntityRenderers
 import net.minecraft.network.syncher.EntityDataSerializer
-import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.Entity
@@ -13,23 +12,25 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier
 import net.minecraft.world.item.CreativeModeTab
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraftforge.common.ForgeHooks
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent
-import net.minecraftforge.event.entity.EntityJoinLevelEvent
-import net.minecraftforge.fml.loading.FMLLoader
+import net.minecraft.world.item.crafting.RecipeType
+import net.neoforged.fml.loading.FMLLoader
+import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent
+import net.neoforged.neoforge.registries.NeoForgeRegistries
+import net.neoforged.neoforge.registries.RegisterEvent
 import settingdust.calypsos_mobs.adapter.LoaderAdapter
-import thedarkcolour.kotlinforforge.forge.MOD_BUS
+import thedarkcolour.kotlinforforge.neoforge.forge.MOD_BUS
 
 class LoaderAdapter : LoaderAdapter {
     override val isClient: Boolean
         get() = FMLLoader.getDist().isClient
 
-    override fun ItemStack.getBurnTime() = ForgeHooks.getBurnTime(this, null)
+    override fun ItemStack.getBurnTime() = getBurnTime(RecipeType.SMELTING)
 
     override fun <T : Entity> T.onCreatedInLevel(callback: () -> Unit) {
-        MinecraftForge.EVENT_BUS.addListener { event: EntityJoinLevelEvent ->
+        NeoForge.EVENT_BUS.addListener { event: EntityJoinLevelEvent ->
             if (event.entity == this) callback()
         }
     }
@@ -53,6 +54,10 @@ class LoaderAdapter : LoaderAdapter {
     }
 
     override fun registerEntityDataSerializer(id: ResourceLocation, serializer: EntityDataSerializer<*>) {
-        EntityDataSerializers.registerSerializer(serializer)
+        MOD_BUS.addListener { event: RegisterEvent ->
+            if (event.registryKey == NeoForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS) {
+                event.register(NeoForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS, id) { serializer }
+            }
+        }
     }
 }

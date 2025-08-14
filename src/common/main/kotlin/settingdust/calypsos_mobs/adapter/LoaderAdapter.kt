@@ -1,7 +1,9 @@
 package settingdust.calypsos_mobs.adapter
 
 import net.minecraft.client.renderer.entity.EntityRendererProvider
+import net.minecraft.network.syncher.EntityDataSerializer
 import net.minecraft.resources.ResourceKey
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.LivingEntity
@@ -25,4 +27,6 @@ interface LoaderAdapter {
     fun <T : Entity> EntityType<T>.rendererProvider(provider: EntityRendererProvider<T>)
 
     fun <T : Item> T.creativeTab(key: ResourceKey<CreativeModeTab>)
+
+    fun registerEntityDataSerializer(id: ResourceLocation, serializer: EntityDataSerializer<*>)
 }
