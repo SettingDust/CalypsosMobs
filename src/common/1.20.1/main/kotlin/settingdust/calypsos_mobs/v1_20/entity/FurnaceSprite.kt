@@ -8,7 +8,6 @@ import net.minecraft.world.item.crafting.RecipeManager
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.Level
 import settingdust.calypsos_mobs.WeightedMap
-import settingdust.calypsos_mobs.adapter.LoaderAdapter.Companion.onCreatedInLevel
 import settingdust.calypsos_mobs.entity.FurnaceSprite
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.core.animation.AnimatableManager
@@ -47,16 +46,6 @@ class FurnaceSprite(type: EntityType<settingdust.calypsos_mobs.v1_20.entity.Furn
             val SPIT2 = RawAnimation.begin().thenPlay("furnace_sprite.spit2")
 
             val SPITS = arrayOf("Spit", "Spit2")
-        }
-    }
-
-    init {
-        setPersistenceRequired()
-        setCanPickUpLoot(true)
-
-        onCreatedInLevel {
-            if (level().isClientSide) return@onCreatedInLevel
-            triggerAnim("WakeUp", "WakeUp")
         }
     }
 
