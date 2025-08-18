@@ -1,7 +1,14 @@
 @file:Suppress("UnstableApiUsage")
 
+import earth.terrarium.cloche.api.attributes.TargetAttributes
 import earth.terrarium.cloche.api.target.FabricTarget
+import earth.terrarium.cloche.api.target.ForgeLikeTarget
+import earth.terrarium.cloche.api.target.ForgeTarget
+import earth.terrarium.cloche.api.target.MinecraftTarget
+import earth.terrarium.cloche.api.target.NeoforgeTarget
 import groovy.lang.Closure
+import net.msrandom.minecraftcodev.core.utils.lowerCamelCaseGradleName
+import org.gradle.jvm.tasks.Jar
 
 
 plugins {
@@ -12,9 +19,9 @@ plugins {
 
     id("com.palantir.git-version") version "3.1.0"
 
-    id("com.gradleup.shadow") version "8.3.6"
+    id("com.gradleup.shadow") version "9.0.2"
 
-    id("earth.terrarium.cloche") version "0.11.21"
+    id("earth.terrarium.cloche") version "0.12.2-dust"
 }
 
 val archive_name: String by rootProject.properties
@@ -106,9 +113,9 @@ cloche {
         official()
     }
 
-    common {
-        mixins.from(file("src/common/main/resources/$id.mixins.json"))
-        accessWideners.from(file("src/common/main/resources/$id.accesswidener"))
+    val mainCommon = common("common:common") {
+        mixins.from(file("src/common/common/main/resources/$id.mixins.json"))
+        accessWideners.from(file("src/common/common/main/resources/$id.accessWidener"))
 
         dependencies {
             compileOnly("org.spongepowered:mixin:0.8.7")
@@ -120,154 +127,238 @@ cloche {
         "1.21.1" to common("common:1.21.1"),
     )
 
-    val fabricCommon = common("fabric:common") {
-        mixins.from(file("src/fabric/common/main/resources/$id.fabric.mixins.json"))
-    }
-
-    targets.withType<FabricTarget> {
-        dependsOn(fabricCommon)
-
-        loaderVersion = "0.16.14"
-
-        includedClient()
-
-        metadata {
-            entrypoint("main") {
-                adapter = "kotlin"
-                value = "settingdust.calypsos_mobs.fabric.Entrypoint::init"
-            }
-
-            entrypoint("client") {
-                adapter = "kotlin"
-                value = "settingdust.calypsos_mobs.fabric.Entrypoint::clientInit"
-            }
-
-            dependency {
-                modId = "fabric-api"
-            }
-
-            dependency {
-                modId = "fabric-language-kotlin"
-            }
+    run fabric@{
+        val fabricCommon = common("fabric:common") {
+            mixins.from(file("src/fabric/common/main/resources/$id.fabric.mixins.json"))
         }
 
-        dependencies {
-            modImplementation("net.fabricmc:fabric-language-kotlin:1.13.1+kotlin.2.1.10")
-        }
-    }
+        val fabric1201 = fabric("fabric:1.20.1") {
+            minecraftVersion = "1.20.1"
 
-    fabric("fabric:1.20.1") {
-        minecraftVersion = "1.20.1"
-
-        metadata {
-            dependency {
-                modId = "minecraft"
-                version {
-                    start = "1.20.1"
-                    end = "1.21"
+            metadata {
+                dependency {
+                    modId = "minecraft"
+                    version {
+                        start = "1.20.1"
+                        end = "1.21"
+                    }
                 }
             }
+
+            dependencies {
+                fabricApi("0.92.6")
+
+                modImplementation(catalog.geckolib.get1().get20().get1().fabric)
+                implementation(catalog.mclib)
+
+                modImplementation(catalog.smartbrainlib.get1().get20().get1().fabric)
+            }
         }
 
-        dependencies {
-            fabricApi("0.92.6")
+        val fabric121 = fabric("fabric:1.21") {
+            minecraftVersion = "1.21.1"
 
-            modImplementation(catalog.geckolib.get1().get20().get1().fabric)
-            implementation(catalog.mclib)
-
-            modImplementation(catalog.smartbrainlib.get1().get20().get1().fabric)
-        }
-    }
-
-    fabric("fabric:1.21") {
-        minecraftVersion = "1.21.1"
-
-        metadata {
-            dependency {
-                modId = "minecraft"
-                version {
-                    start = "1.21"
+            metadata {
+                dependency {
+                    modId = "minecraft"
+                    version {
+                        start = "1.21"
+                    }
                 }
             }
-        }
 
-        dependencies {
-            fabricApi("0.116.5")
+            dependencies {
+                fabricApi("0.116.5")
 
-            modImplementation(catalog.geckolib.get1().get21().get1().fabric)
-            modImplementation(catalog.smartbrainlib.get1().get21().get1().fabric)
-        }
-    }
-
-    forge {
-        minecraftVersion = "1.20.1"
-        loaderVersion = "47.4.4"
-
-        metadata {
-            modLoader = "kotlinforforge"
-            loaderVersion {
-                start = "4"
+                modImplementation(catalog.geckolib.get1().get21().get1().fabric)
+                modImplementation(catalog.smartbrainlib.get1().get21().get1().fabric)
             }
+        }
 
-            dependency {
-                modId = "minecraft"
-                version {
-                    start = "1.20.1"
-                    end = "1.21"
+        fabric("container:fabric") {
+            minecraftVersion = "1.20.1"
+
+            val targets = setOf(fabric1201, fabric121)
+
+            dependencies {
+                for (target in targets) {
+                    include(project()) {
+                        capabilities {
+                            requireFeature(target.capabilitySuffix)
+                        }
+
+                        attributes {
+                            attributeProvider(TargetAttributes.MINECRAFT_VERSION, target.minecraftVersion)
+                        }
+                    }
                 }
             }
-        }
 
-        repositories {
-            maven("https://repo.spongepowered.org/maven") {
-                content {
-                    includeGroup("org.spongepowered")
-                }
+            tasks.named<Jar>(includeJarTaskName) {
+                archiveClassifier = target.loaderName
+
+                dependsOn(targets.map { it.includeJarTaskName })
             }
         }
 
-        dependencies {
-            implementation("org.spongepowered:mixin:0.8.7")
-            implementation(catalog.mixinextras.common)
-            implementation(catalog.mixinextras.forge)
+        targets.withType<FabricTarget> {
+            loaderVersion = "0.16.14"
 
-            modImplementation("thedarkcolour:kotlinforforge:4.11.0")
+            includedClient()
 
-            modImplementation(catalog.geckolib.get1().get20().get1().forge)
-            implementation(catalog.mclib)
+            if (isContainer()) return@withType
 
-            modImplementation(catalog.smartbrainlib.get1().get20().get1().forge)
+            dependsOn(fabricCommon)
+
+            metadata {
+                entrypoint("main") {
+                    adapter = "kotlin"
+                    value = "settingdust.calypsos_mobs.fabric.Entrypoint::init"
+                }
+
+                entrypoint("client") {
+                    adapter = "kotlin"
+                    value = "settingdust.calypsos_mobs.fabric.Entrypoint::clientInit"
+                }
+
+                dependency {
+                    modId = "fabric-api"
+                }
+
+                dependency {
+                    modId = "fabric-language-kotlin"
+                }
+            }
+
+            dependencies {
+                modImplementation("net.fabricmc:fabric-language-kotlin:1.13.1+kotlin.2.1.10")
+            }
         }
     }
 
-    neoforge("neoforge:1.21") {
-        minecraftVersion = "1.21.1"
-        loaderVersion = "21.1.192"
+    run forge@{
+        val forge1201 = forge("forge:1.20.1") {
+            minecraftVersion = "1.20.1"
+            loaderVersion = "47.4.4"
 
-        metadata {
-            modLoader = "kotlinforforge"
-            loaderVersion {
-                start = "5"
+            metadata {
+                modLoader = "kotlinforforge"
+                loaderVersion {
+                    start = "4"
+                }
+
+                dependency {
+                    modId = "minecraft"
+                    version {
+                        start = "1.20.1"
+                        end = "1.21"
+                    }
+                }
             }
 
-            dependency {
-                modId = "minecraft"
-                version {
-                    start = "1.21"
+            repositories {
+                maven("https://repo.spongepowered.org/maven") {
+                    content {
+                        includeGroup("org.spongepowered")
+                    }
                 }
+            }
+
+            dependencies {
+                implementation("org.spongepowered:mixin:0.8.7")
+                implementation(catalog.mixinextras.common)
+                implementation(catalog.mixinextras.forge)
+
+                modImplementation("thedarkcolour:kotlinforforge:4.11.0")
+
+                modImplementation(catalog.geckolib.get1().get20().get1().forge)
+                implementation(catalog.mclib)
+
+                modImplementation(catalog.smartbrainlib.get1().get20().get1().forge)
+            }
+        }
+    }
+
+    run neoforge@{
+        val neoforge121 = neoforge("neoforge:1.21") {
+            minecraftVersion = "1.21.1"
+
+            metadata {
+                modLoader = "kotlinforforge"
+                loaderVersion {
+                    start = "5"
+                }
+
+                dependency {
+                    modId = "minecraft"
+                    version {
+                        start = "1.21"
+                    }
+                }
+            }
+
+            dependencies {
+                modImplementation("thedarkcolour:kotlinforforge-neoforge:5.9.0")
+
+                modImplementation(catalog.geckolib.get1().get21().get1().neoforge)
+                modImplementation(catalog.smartbrainlib.get1().get21().get1().neoforge)
             }
         }
 
-        dependencies {
-            modImplementation("thedarkcolour:kotlinforforge-neoforge:5.9.0")
+        neoforge("container:neoforge") {
+            minecraftVersion = "1.21.1"
 
-            modImplementation(catalog.geckolib.get1().get21().get1().neoforge)
-            modImplementation(catalog.smartbrainlib.get1().get21().get1().neoforge)
+            val targets = setOf(neoforge121)
+
+            dependencies {
+                for (target in targets) {
+                    include(project()) {
+                        capabilities {
+                            requireFeature(target.capabilitySuffix)
+                        }
+                    }
+                }
+            }
+
+            tasks.named<Jar>(includeJarTaskName) {
+                archiveClassifier = target.loaderName
+
+                dependsOn(targets.map { it.includeJarTaskName })
+            }
+        }
+
+        targets.withType<NeoforgeTarget> {
+            loaderVersion = "21.1.192"
+
+            if (isContainer()) return@withType
+
+            metadata {
+                modLoader = "kotlinforforge"
+                loaderVersion {
+                    start = "5"
+                }
+            }
+        }
+    }
+
+    commonTargets.all {
+        if (this != mainCommon && this != common()) {
+            dependsOn(mainCommon)
         }
     }
 
     targets.all {
-        dependsOn(commons.getValue(minecraftVersion.get()))
+        if (isContainer()) {
+            if (this is ForgeLikeTarget) {
+                tasks.named<Jar>(includeJarTaskName) {
+                    exclude(modsManifestPath)
+                }
+            }
+
+            return@all
+        }
+
+        dependsOn(mainCommon, commons.getValue(minecraftVersion.get()))
 
         runs {
             client()
@@ -285,8 +376,68 @@ cloche {
     }
 }
 
+val SourceSet.jarInJarTaskName: String
+    get() = lowerCamelCaseGradleName(takeUnless(SourceSet::isMain)?.name, "jarInJar")
+
+val SourceSet.jarJarTaskName: String
+    get() = lowerCamelCaseGradleName(takeUnless(SourceSet::isMain)?.name, "jarJar")
+
+val MinecraftTarget.includeJarTaskName: String
+    get() = when (this) {
+        is FabricTarget -> sourceSet.jarInJarTaskName
+        is ForgeLikeTarget -> sourceSet.jarJarTaskName
+        else -> throw IllegalArgumentException("Unsupported target $this")
+    }
+
+val FabricTarget.modsJsonPath: String
+    get() = "fabric.mod.json"
+
+val ForgeTarget.modsTomlPath: String
+    get() = "META-INF/mods.toml"
+
+val NeoforgeTarget.modsTomlPath: String
+    get() = "META-INF/neoforge.mods.toml"
+
+val MinecraftTarget.modsManifestPath: String
+    get() = when (this) {
+        is FabricTarget -> modsJsonPath
+        is ForgeTarget -> modsTomlPath
+        is NeoforgeTarget -> modsTomlPath
+        else -> throw IllegalArgumentException("Unsupported target $this")
+    }
+
+fun String.camelToKebabCase(): String {
+    val pattern = "(?<=.)[A-Z]".toRegex()
+    return this.replace(pattern, "-$0").lowercase()
+}
+
+fun MinecraftTarget.isContainer() = name.startsWith("container")
+
 tasks {
     withType<ProcessResources> {
         duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+
+    withType<Jar> {
+        duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+
+    shadowJar {
+        archiveClassifier = ""
+
+        configurations.empty()
+
+        for (target in cloche.targets.filter { it.isContainer() }) {
+            from(target.finalJar.map { zipTree(it) })
+            manifest.inheritFrom(getByName<Jar>(target.includeJarTaskName).manifest)
+        }
+
+        manifest {
+            attributes(
+                "FMLModType" to "GAMELIBRARY"
+            )
+        }
+
+        append("META-INF/accesstransformer.cfg")
     }
 }
