@@ -6,7 +6,7 @@ import groovy.lang.Closure
 plugins {
     java
 
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.2.10"
     kotlin("plugin.serialization") version "2.0.0"
 
     id("com.palantir.git-version") version "3.1.0"
