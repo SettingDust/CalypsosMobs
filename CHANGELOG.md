@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-08-08
+### :wrench: Chores
+- [`22d01b9`](https://github.com/SettingDust/CalypsosMobs/commit/22d01b9e33b84c8f03ef65aea2d965fd8c5a69a0) - remove unused mixin *(commit by [@SettingDust](https://github.com/SettingDust))*
+
+
 ## [0.1.0] - 2025-08-07
 ### :sparkles: New Features
 - [`c0686c2`](https://github.com/SettingDust/CalypsosMobs/commit/c0686c292e4fbc82875c060c4bf3ab5141f80105) - finish `FurnaceSprite` *(commit by [@SettingDust](https://github.com/SettingDust))*
@@ -55,3 +60,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [`a86abcb`](https://github.com/SettingDust/CalypsosMobs/commit/a86abcbac5d6fc0cd98ecf6a43fe89294d13c96b) - remove useless classes *(commit by [@SettingDust](https://github.com/SettingDust))*
 
 [0.1.0]: https://github.com/SettingDust/CalypsosMobs/compare/0.0.0...0.1.0
+[0.1.1]: https://github.com/SettingDust/CalypsosMobs/compare/0.1.0...0.1.1
