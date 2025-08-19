@@ -2,11 +2,13 @@
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import earth.terrarium.cloche.api.attributes.TargetAttributes
+import earth.terrarium.cloche.api.metadata.ModMetadata
 import earth.terrarium.cloche.api.target.FabricTarget
 import earth.terrarium.cloche.api.target.ForgeLikeTarget
 import earth.terrarium.cloche.api.target.ForgeTarget
 import earth.terrarium.cloche.api.target.MinecraftTarget
 import earth.terrarium.cloche.api.target.NeoforgeTarget
+import earth.terrarium.cloche.tasks.GenerateFabricModJson
 import groovy.lang.Closure
 import net.msrandom.minecraftcodev.core.utils.lowerCamelCaseGradleName
 import net.msrandom.minecraftcodev.fabric.MinecraftCodevFabricPlugin
@@ -140,6 +142,7 @@ cloche {
             metadata {
                 dependency {
                     modId = "minecraft"
+                    required = true
                     version {
                         start = "1.20.1"
                         end = "1.21"
@@ -155,6 +158,22 @@ cloche {
 
                 modImplementation(catalog.smartbrainlib.get1().get20().get1().fabric)
             }
+
+            tasks.named<GenerateFabricModJson>(generateModsManifestTaskName) {
+                commonMetadata = objects.newInstance<ModMetadata>().apply {
+                    modId.value("${id}_1_20")
+                    name.value(cloche.metadata.name)
+                    description.value(cloche.metadata.description)
+                    license.value(cloche.metadata.license)
+                    icon.value(cloche.metadata.icon)
+                    sources.value(cloche.metadata.sources)
+                    issues.value(cloche.metadata.issues)
+                    authors.value(cloche.metadata.authors)
+                    contributors.value(cloche.metadata.contributors)
+                    dependencies.value(cloche.metadata.dependencies)
+                    custom.value(cloche.metadata.custom)
+                }
+            }
         }
 
         val fabric121 = fabric("fabric:1.21") {
@@ -163,6 +182,7 @@ cloche {
             metadata {
                 dependency {
                     modId = "minecraft"
+                    required = true
                     version {
                         start = "1.21"
                     }
@@ -174,6 +194,22 @@ cloche {
 
                 modImplementation(catalog.geckolib.get1().get21().get1().fabric)
                 modImplementation(catalog.smartbrainlib.get1().get21().get1().fabric)
+            }
+
+            tasks.named<GenerateFabricModJson>(generateModsManifestTaskName) {
+                commonMetadata = objects.newInstance<ModMetadata>().apply {
+                    modId.value("${id}_1_21")
+                    name.value(cloche.metadata.name)
+                    description.value(cloche.metadata.description)
+                    license.value(cloche.metadata.license)
+                    icon.value(cloche.metadata.icon)
+                    sources.value(cloche.metadata.sources)
+                    issues.value(cloche.metadata.issues)
+                    authors.value(cloche.metadata.authors)
+                    contributors.value(cloche.metadata.contributors)
+                    dependencies.value(cloche.metadata.dependencies)
+                    custom.value(cloche.metadata.custom)
+                }
             }
         }
 
@@ -201,6 +237,13 @@ cloche {
 
                 dependsOn(targets.map { it.includeJarTaskName })
             }
+
+            tasks.named<GenerateFabricModJson>(generateModsManifestTaskName) {
+                commonMetadata = objects.newInstance<ModMetadata>().apply {
+                    modId.value(cloche.metadata.modId)
+                    license.value(cloche.metadata.license)
+                }
+            }
         }
 
         targets.withType<FabricTarget> {
@@ -225,10 +268,12 @@ cloche {
 
                 dependency {
                     modId = "fabric-api"
+                    required = true
                 }
 
                 dependency {
                     modId = "fabric-language-kotlin"
+                    required = true
                 }
             }
 
@@ -251,6 +296,7 @@ cloche {
 
                 dependency {
                     modId = "minecraft"
+                    required = true
                     version {
                         start = "1.20.1"
                         end = "1.21"
@@ -293,6 +339,7 @@ cloche {
 
                 dependency {
                     modId = "minecraft"
+                    required = true
                     version {
                         start = "1.21"
                     }
