@@ -29,7 +29,7 @@ jobs:
           token: ${{ github.token }}
           tag: ${{ github.ref_name }}
 
-      - name: Upload jar
+      - name: Upload bundled jar
         uses: Kir-Antipov/mc-publish@v3.3.0
         with:
           changelog: ${{ steps.changelog.outputs.changes }}
@@ -44,13 +44,14 @@ jobs:
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
 
           files: |
-            build/libs/!(*-@(sources|dev)).jar
-            build/libs/*-@(sources).jar
+            build/libs/!(*-@(fabric*|neoforge*|forge*|sources)).jar
+            build/libs/*-@(fabric-*|neoforge-*|sources).jar
 
           version: ${{ github.ref_name }}
 
           loaders: |
-            forge
+            neoforge
+            fabric
 
           game-versions: |
             1.20.1
@@ -59,6 +60,7 @@ jobs:
           game-version-filter: releases
 
           dependencies: |
+            fabric-language-kotlin
             kotlin-for-forge
             smartbrainlib
             geckolib
@@ -67,6 +69,42 @@ jobs:
           java: |
             17
             21
+
+      - name: Upload forge jar
+        uses: Kir-Antipov/mc-publish@v3.3.0
+        with:
+          changelog: ${{ steps.changelog.outputs.changes }}
+          # Only include this section if you wish to publish
+          # your assets on Modrinth.
+          modrinth-id: calypsos-mobs
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          # Only include this section if you wish to publish
+          # your assets on CurseForge.
+          curseforge-id: 1321832
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+
+          files: |
+            build/libs/*-forge-*.jar
+            build/libs/*-sources.jar
+
+          version: ${{ github.ref_name }}
+
+          loaders: |
+            forge
+
+          game-versions: |
+            1.20.1
+          game-version-filter: releases
+
+          dependencies: |
+            kotlin-for-forge
+            smartbrainlib
+            geckolib
+          
+
+          java: |
+            17
 
       - name: Commit CHANGELOG.md
         uses: stefanzweifel/git-auto-commit-action@v5
