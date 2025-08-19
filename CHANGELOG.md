@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-08-19
+### :sparkles: New Features
+- [`d982b33`](https://github.com/SettingDust/CalypsosMobs/commit/d982b33a9a6d6602f2d7edd99cf71e0674728fed) - 1.20.1 fabric and forge working *(commit by [@SettingDust](https://github.com/SettingDust))*
+- [`a821f59`](https://github.com/SettingDust/CalypsosMobs/commit/a821f59ff9cee6192ac77e40a55f233a6a71663d) - 1.21.1 fabric working *(commit by [@SettingDust](https://github.com/SettingDust))*
+- [`4c3b5f7`](https://github.com/SettingDust/CalypsosMobs/commit/4c3b5f74acf8d914bfcee21660c303c0ea2b9edd) - 1.21.1 neoforge working *(commit by [@SettingDust](https://github.com/SettingDust))*
+
+### :bug: Bug Fixes
+- [`70fbb8c`](https://github.com/SettingDust/CalypsosMobs/commit/70fbb8c3049e093595da067cb9486f559b29be5e) - add to creative tab correctly *(commit by [@SettingDust](https://github.com/SettingDust))*
+- [`4e4f697`](https://github.com/SettingDust/CalypsosMobs/commit/4e4f697c2e01a6d98d6ee0a2393111f5b3f59922) - only wake up when generating *(commit by [@SettingDust](https://github.com/SettingDust))*
+
+### :recycle: Refactors
+- [`9b7ba00`](https://github.com/SettingDust/CalypsosMobs/commit/9b7ba002d2bc2fdb7f056f47718de61becb137c3) - split heat level out into common module *(commit by [@SettingDust](https://github.com/SettingDust))*
+
+
 ## [0.1.1] - 2025-08-08
 ### :wrench: Chores
 - [`22d01b9`](https://github.com/SettingDust/CalypsosMobs/commit/22d01b9e33b84c8f03ef65aea2d965fd8c5a69a0) - remove unused mixin *(commit by [@SettingDust](https://github.com/SettingDust))*
@@ -61,3 +75,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [0.1.0]: https://github.com/SettingDust/CalypsosMobs/compare/0.0.0...0.1.0
 [0.1.1]: https://github.com/SettingDust/CalypsosMobs/compare/0.1.0...0.1.1
+[0.2.0]: https://github.com/SettingDust/CalypsosMobs/compare/0.1.1...0.2.0
