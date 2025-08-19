@@ -1,5 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import earth.terrarium.cloche.api.attributes.TargetAttributes
 import earth.terrarium.cloche.api.target.FabricTarget
 import earth.terrarium.cloche.api.target.ForgeLikeTarget
@@ -406,6 +407,19 @@ val MinecraftTarget.modsManifestPath: String
         else -> throw IllegalArgumentException("Unsupported target $this")
     }
 
+val FabricTarget.generateModsJsonTaskName: String
+    get() = lowerCamelCaseGradleName("generate", featureName, "ModJson")
+
+val ForgeLikeTarget.generateModsTomlTaskName: String
+    get() = lowerCamelCaseGradleName("generate", featureName, "modsToml")
+
+val MinecraftTarget.generateModsManifestTaskName: String
+    get() = when (this) {
+        is FabricTarget -> generateModsJsonTaskName
+        is ForgeLikeTarget -> generateModsTomlTaskName
+        else -> throw IllegalArgumentException("Unsupported target $this")
+    }
+
 fun String.camelToKebabCase(): String {
     val pattern = "(?<=.)[A-Z]".toRegex()
     return this.replace(pattern, "-$0").lowercase()
@@ -439,5 +453,23 @@ tasks {
         }
 
         append("META-INF/accesstransformer.cfg")
+    }
+
+    val shadowSourcesJar by registering(ShadowJar::class) {
+        dependsOn(cloche.targets.map { it.generateModsManifestTaskName })
+
+        mergeServiceFiles()
+        archiveClassifier.set("sources")
+        from(sourceSets.map { it.allSource })
+
+        doFirst {
+            manifest {
+                from(source.filter { it.name.equals("MANIFEST.MF") }.toList())
+            }
+        }
+    }
+
+    build {
+        dependsOn(shadowSourcesJar)
     }
 }
