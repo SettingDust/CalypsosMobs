@@ -9,6 +9,7 @@ import earth.terrarium.cloche.api.target.MinecraftTarget
 import earth.terrarium.cloche.api.target.NeoforgeTarget
 import groovy.lang.Closure
 import net.msrandom.minecraftcodev.core.utils.lowerCamelCaseGradleName
+import net.msrandom.minecraftcodev.fabric.MinecraftCodevFabricPlugin
 import org.gradle.jvm.tasks.Jar
 
 
@@ -471,5 +472,23 @@ tasks {
 
     build {
         dependsOn(shadowSourcesJar)
+    }
+
+    val remapFabricMinecraftIntermediary by registering {
+        dependsOn(cloche.targets.filterIsInstance<FabricTarget>().flatMap {
+            listOf(
+                lowerCamelCaseGradleName(
+                    "remap",
+                    it.name,
+                    "commonMinecraft",
+                    MinecraftCodevFabricPlugin.INTERMEDIARY_MAPPINGS_NAMESPACE,
+                ), lowerCamelCaseGradleName(
+                    "remap",
+                    it.name,
+                    "clientMinecraft",
+                    MinecraftCodevFabricPlugin.INTERMEDIARY_MAPPINGS_NAMESPACE,
+                )
+            )
+        })
     }
 }
