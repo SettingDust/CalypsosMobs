@@ -271,7 +271,7 @@ cloche {
                 implementation(catalog.mixinextras.common)
                 implementation(catalog.mixinextras.forge)
 
-                modImplementation("thedarkcolour:kotlinforforge:4.11.0")
+                modImplementation("thedarkcolour:kotlinforforge:5.9.0")
 
                 modImplementation(catalog.geckolib.get1().get20().get1().forge)
                 implementation(catalog.mclib)
